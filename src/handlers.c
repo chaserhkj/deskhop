@@ -105,8 +105,11 @@ void screenlock_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
     for (int out = 0; out < NUM_SCREENS; out++) {
         switch (state->config.output[out].os) {
             case WINDOWS:
-            case LINUX:
                 lock_report.modifier   = KEYBOARD_MODIFIER_LEFTGUI;
+                lock_report.keycode[0] = HID_KEY_L;
+                break;
+            case LINUX:
+                lock_report.modifier   = KEYBOARD_MODIFIER_LEFTGUI| KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTSHIFT;
                 lock_report.keycode[0] = HID_KEY_L;
                 break;
             case MACOS:
