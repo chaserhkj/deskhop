@@ -29,66 +29,67 @@ hotkey_combo_t hotkeys[] = {
      .pass_to_os     = false,
      .action_handler = &output_toggle_hotkey_handler},
 
-    /* Pressing right ALT + right CTRL toggles the slow mouse mode */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTALT | KEYBOARD_MODIFIER_RIGHTCTRL,
-     .keys           = {},
-     .key_count      = 0,
+    /* Pressing right CTRL + right SHIFT + Backspace toggles the slow mouse mode */
+    {.modifier       = KEYBOARD_MODIFIER_RIGHTCTRL | KEYBOARD_MODIFIER_RIGHTSHIFT,
+     .keys           = {HID_KEY_BACKSPACE},
+     .key_count      = 1,
      .pass_to_os     = true,
      .acknowledge    = true,
      .action_handler = &mouse_zoom_hotkey_handler},
 
     /* Switch lock */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTCTRL,
-     .keys           = {HID_KEY_L},
+    {.modifier       = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTALT,
+     .keys           = {HID_KEY_BACKSPACE},
      .key_count      = 1,
      .acknowledge    = true,
      .action_handler = &switchlock_hotkey_handler},
 
     /* Screen lock */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTALT | KEYBOARD_MODIFIER_RIGHTSHIFT,
+    {.modifier       = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HID_KEY_L},
      .key_count      = 1,
      .acknowledge    = true,
      .action_handler = &screenlock_hotkey_handler},
 
-    /* Erase stored config */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-     .keys           = {HID_KEY_BACKSPACE},
-     .key_count      = 1,
-     .pass_to_os     = true,
-     .action_handler = &output_config_hotkey_handler},
+    // Disabled hotkeys
+    // /* Store config */
+    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
+    //  .keys           = {HID_KEY_BACKSPACE},
+    //  .key_count      = 1,
+    //  .pass_to_os     = true,
+    //  .action_handler = &output_config_hotkey_handler},
 
-    /* Erase stored config */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_D},
-     .key_count      = 2,
-     .acknowledge    = true,
-     .action_handler = &wipe_config_hotkey_handler},
+    // /* Erase stored config */
+    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
+    //  .keys           = {HID_KEY_F12, HID_KEY_N},
+    //  .key_count      = 2,
+    //  .acknowledge    = true,
+    //  .action_handler = &wipe_config_hotkey_handler},
 
-    /* Toggle screensaver function */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_S},
-     .key_count      = 2,
-     .acknowledge    = true,
-     .action_handler = &screensaver_hotkey_handler},
+    // /* Toggle screensaver function */
+    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
+    //  .keys           = {HID_KEY_F12, HID_KEY_T},
+    //  .key_count      = 2,
+    //  .acknowledge    = true,
+    //  .action_handler = &screensaver_hotkey_handler},
 
     /* Record switch y coordinate  */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_Y},
-     .key_count      = 2,
-     .acknowledge    = true,
-     .action_handler = &screen_border_hotkey_handler},
+    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
+    //  .keys           = {HID_KEY_F12, HID_KEY_G},
+    //  .key_count      = 2,
+    //  .acknowledge    = true,
+    //  .action_handler = &screen_border_hotkey_handler},
 
     /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_A},
+     .keys           = {HID_KEY_F12, HID_KEY_Z},
      .key_count      = 2,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_A},
 
     /* Hold down left shift + right shift + F12 + B ==> firmware upgrade mode for board B (mouse) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_B},
+     .keys           = {HID_KEY_F12, HID_KEY_X},
      .key_count      = 2,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_B}};
