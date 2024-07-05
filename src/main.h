@@ -189,6 +189,8 @@ typedef struct {
     uint64_t max_time_us;
 } screensaver_t;
 
+// TODO: since we have screens.h to handle screen size and position
+// we should get rid of the screen primitives here to merge screens.h into here
 /* Define output parameters */
 typedef struct {
     int number;                // Number of this output (e.g. OUTPUT_A = 0 etc)

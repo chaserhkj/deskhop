@@ -17,6 +17,7 @@
 
 #include "main.h"
 
+// TODO: get rid of border/screen handling code here that is no longer needed
 /**=================================================== *
  * ============  Hotkey Handler Routines  ============ *
  * =================================================== */

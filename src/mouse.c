@@ -16,6 +16,7 @@
  */
 
 #include "main.h"
+#include "screens.h"
 
 /* Move mouse coordinate 'position' by 'offset', but don't fall off the screen */
 int32_t move_and_keep_on_screen(int position, int offset) {
@@ -122,7 +123,7 @@ int16_t scale_y_coordinate(int screen_from, int screen_to, device_t *state) {
 }
 
 void switch_screen(
-    device_t *state, output_t *output, int new_x, int output_from, int output_to, int direction) {
+    device_t *state, int new_x, int new_y, int output_to) {
     unsigned mouse_y = (MOUSE_PARKING_POSITION == 0) ? MIN_SCREEN_COORD : /*TOP*/
                        (MOUSE_PARKING_POSITION == 1) ? MAX_SCREEN_COORD : /*BOTTOM*/
                                                        state->mouse_y;    /*PREVIOUS*/
@@ -130,77 +131,67 @@ void switch_screen(
 
     output_mouse_report(&hidden_pointer, state);
     switch_output(state, output_to);
-    state->mouse_x = (direction == LEFT) ? MAX_SCREEN_COORD : MIN_SCREEN_COORD;
-    state->mouse_y = scale_y_coordinate(output->number, 1 - output->number, state);
+    state->mouse_x = new_x;
+    state->mouse_y = new_y;
 }
 
-void switch_desktop(device_t *state, output_t *output, int new_index, int direction) {
-    /* Fix for MACOS: Send relative mouse movement here, one or two pixels in the 
-       direction of movement, BEFORE absolute report sets X to 0 */
-    mouse_report_t move_relative_one
-        = {.x = (direction == LEFT) ? SCREEN_MIDPOINT - 2 : SCREEN_MIDPOINT + 2, .mode = RELATIVE};
+// Not using this for now, since we only do Linux and Windows, with Windows only having
+// one output
+// void switch_desktop(device_t *state, output_t *output, int new_index, int direction) {
+//     /* Fix for MACOS: Send relative mouse movement here, one or two pixels in the 
+//        direction of movement, BEFORE absolute report sets X to 0 */
+//     mouse_report_t move_relative_one
+//         = {.x = (direction == LEFT) ? SCREEN_MIDPOINT - 2 : SCREEN_MIDPOINT + 2, .mode = RELATIVE};
 
-    switch (output->os) {
-        case MACOS:
-            /* Once isn't reliable enough, but repeating it does the trick */
-            for (int move_cnt=0; move_cnt<5; move_cnt++)
-                output_mouse_report(&move_relative_one, state);
-            break;
+//     switch (output->os) {
+//         case MACOS:
+//             /* Once isn't reliable enough, but repeating it does the trick */
+//             for (int move_cnt=0; move_cnt<5; move_cnt++)
+//                 output_mouse_report(&move_relative_one, state);
+//             break;
 
-        case WINDOWS:
-            /* TODO: Switch to relative-only if index > 1, but keep tabs to switch back */
-            state->relative_mouse = (new_index > 1);
-            break;
+//         case WINDOWS:
+//             /* TODO: Switch to relative-only if index > 1, but keep tabs to switch back */
+//             state->relative_mouse = (new_index > 1);
+//             break;
 
-        case LINUX:
-        case OTHER:
-            /* Linux should treat all desktops as a single virtual screen, so you should leave
-            screen_count at 1 and it should just work */
-            break;
-    }
+//         case LINUX:
+//         case OTHER:
+//             /* Linux should treat all desktops as a single virtual screen, so you should leave
+//             screen_count at 1 and it should just work */
+//             break;
+//     }
 
-    state->mouse_x       = (direction == RIGHT) ? MIN_SCREEN_COORD : MAX_SCREEN_COORD;
-    output->screen_index = new_index;
-}
+//     state->mouse_x       = (direction == RIGHT) ? MIN_SCREEN_COORD : MAX_SCREEN_COORD;
+//     output->screen_index = new_index;
+// }
 
-/*                               BORDER
-                                   |
-       .---------.    .---------.  |  .---------.    .---------.    .---------.
-      ||    B2   ||  ||    B1   || | ||    A1   ||  ||    A2   ||  ||    A3   ||   (output, index)
-      ||  extra  ||  ||   main  || | ||   main  ||  ||  extra  ||  ||  extra  ||   (main or extra)
-       '---------'    '---------'  |  '---------'    '---------'    '---------'
-          )___(          )___(     |     )___(          )___(          )___(
-*/
+// Customized to my own screen setup
 void check_screen_switch(const mouse_values_t *values, device_t *state) {
     int new_x        = state->mouse_x + values->move_x;
-    output_t *output = &state->config.output[state->active_output];
-
-    bool jump_left  = new_x < MIN_SCREEN_COORD - JUMP_THRESHOLD;
-    bool jump_right = new_x > MAX_SCREEN_COORD + JUMP_THRESHOLD;
-
-    int direction = jump_left ? LEFT : RIGHT;
+    int new_y        = state->mouse_y + values->move_y;
 
     /* No switching allowed if explicitly disabled or mouse button is held */
     if (state->switch_lock || state->mouse_buttons)
         return;
 
-    /* No jump condition met == nothing to do, return */
-    if (!jump_left && !jump_right)
-        return;
-
-    /* We want to jump in the direction of the other computer */
-    if (output->pos != direction) {
-        if (output->screen_index == 1) /* We are at the border -> switch outputs */
-            switch_screen(state, output, new_x, state->active_output, 1 - state->active_output, direction);
-
-        /* If here, this output has multiple desktops and we are not on the main one */
-        else
-            switch_desktop(state, output, output->screen_index - 1, direction);
+    if (state->active_output == OUTPUT_A) {
+        int other_x = x_coord_abs_to_B(x_coord_A_to_abs(new_x));
+        int other_y = y_coord_abs_to_B(y_coord_A_to_abs(new_y));
+        // Not moving onto B
+        if (!coord_on_screen(other_x, other_y))
+            return;
+        switch_screen(state, other_x, other_y, OUTPUT_B);
     }
 
-    /* We want to jump away from the other computer, only possible if there is another screen to jump to */
-    else if (output->screen_index < output->screen_count)
-        switch_desktop(state, output, output->screen_index + 1, direction);
+    if (state->active_output == OUTPUT_B) {
+        int other_x = x_coord_abs_to_A(x_coord_B_to_abs(new_x));
+        int other_y = y_coord_abs_to_A(y_coord_B_to_abs(new_y));
+        // Not moving onto A
+        if (!coord_on_screen(other_x, other_y))
+            return;
+        switch_screen(state, other_x, other_y, OUTPUT_A);
+    }
 }
 
 void extract_report_values(uint8_t *raw_report, device_t *state, mouse_values_t *values) {
