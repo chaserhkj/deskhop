@@ -30,24 +30,26 @@ hotkey_combo_t hotkeys[] = {
      .action_handler = &output_toggle_hotkey_handler},
 
     /* Pressing right CTRL + right SHIFT + Backspace toggles the slow mouse mode */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTCTRL | KEYBOARD_MODIFIER_RIGHTSHIFT,
-     .keys           = {HID_KEY_BACKSPACE},
+    {.modifier       = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_LEFTCTRL,
+     .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
-     .pass_to_os     = true,
+     .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &mouse_zoom_hotkey_handler},
 
     /* Switch lock */
-    {.modifier       = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTALT,
-     .keys           = {HID_KEY_BACKSPACE},
+    {.modifier       = KEYBOARD_MODIFIER_LEFTALT,
+     .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &switchlock_hotkey_handler},
 
     /* Screen lock */
-    {.modifier       = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTALT,
-     .keys           = {HID_KEY_L},
+    {.modifier       = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_LEFTSHIFT,
+     .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &screenlock_hotkey_handler},
 
@@ -81,16 +83,18 @@ hotkey_combo_t hotkeys[] = {
     //  .action_handler = &screen_border_hotkey_handler},
 
     /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_Z},
-     .key_count      = 2,
+    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_LEFTCTRL,
+     .keys           = {HOTKEY_TOGGLE},
+     .key_count      = 1,
+     .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_A},
 
     /* Hold down left shift + right shift + F12 + B ==> firmware upgrade mode for board B (mouse) */
-    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT,
-     .keys           = {HID_KEY_F12, HID_KEY_X},
-     .key_count      = 2,
+    {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTCTRL,
+     .keys           = {HOTKEY_TOGGLE},
+     .key_count      = 1,
+     .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_B}};
 

@@ -32,7 +32,7 @@
  * 
  * */
 
-#define HOTKEY_TOGGLE HID_KEY_INSERT
+#define HOTKEY_TOGGLE HID_KEY_F16
 
 /**================================================== *
  * ==============  Mouse Speed Factor  ============== *
