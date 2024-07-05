@@ -42,6 +42,7 @@ set(COMMON_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/src/setup.c
         ${CMAKE_CURRENT_LIST_DIR}/src/keyboard.c
         ${CMAKE_CURRENT_LIST_DIR}/src/mouse.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/screens.c
         ${CMAKE_CURRENT_LIST_DIR}/src/led.c
         ${CMAKE_CURRENT_LIST_DIR}/src/uart.c
         ${CMAKE_CURRENT_LIST_DIR}/src/usb.c

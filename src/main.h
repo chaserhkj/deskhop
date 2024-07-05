@@ -231,12 +231,33 @@ typedef struct { // Maps message type -> message handler function
 
 typedef struct {
     uint8_t modifier;                // Which modifier is pressed
+    uint8_t modifier_mask;           // Which modifier should NOT be pressed
     uint8_t keys[6];                 // Which keys need to be pressed
     uint8_t key_count;               // How many keys are pressed
     action_handler_t action_handler; // What to execute when the key combination is detected
     bool pass_to_os;                 // True if we are to pass the key to the OS too
     bool acknowledge;                // True if we are to notify the user about registering keypress
 } hotkey_combo_t;
+
+// Screen configuration
+typedef struct {
+    uint32_t width_A;
+    uint32_t width_B;
+    uint32_t height_A;
+    uint32_t height_B;
+    int32_t x_offset_A;
+    int32_t y_offset_A;
+    int32_t x_offset_B;
+    int32_t y_offset_B;
+    uint8_t (*bound_check)(int x, int y, int output);
+} screens_info_t;
+
+enum bound_check_result_e {
+    X_OUT = 1,
+    X_OVERFLOW = 1 << 1,
+    Y_OUT = 1 << 2,
+    Y_OVERFLOW = 1 << 3,
+};
 
 typedef struct TU_ATTR_PACKED {
     uint8_t buttons;
@@ -282,6 +303,9 @@ typedef struct {
     /* Onboard LED blinky (provide feedback when e.g. mouse connected) */
     int32_t blinks_left;     // How many blink transitions are left
     int32_t last_led_change; // Timestamp of the last time led state transitioned
+
+    // current screens_info
+    const screens_info_t* current_screens;
 
 } device_t;
 

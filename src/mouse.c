@@ -19,17 +19,17 @@
 #include "screens.h"
 
 /* Move mouse coordinate 'position' by 'offset', but don't fall off the screen */
-int32_t move_and_keep_on_screen(int position, int offset) {
-    /* Lowest we can go is 0 */
-    if (position + offset < MIN_SCREEN_COORD)
-        return MIN_SCREEN_COORD;
+void move_and_keep_on_screen(device_t *state, int offset_x, int offset_y) {
+    int new_x = state->mouse_x + offset_x;
+    int new_y = state->mouse_y + offset_y;
 
-    /* Highest we can go is MAX_SCREEN_COORD */
-    else if (position + offset > MAX_SCREEN_COORD)
-        return MAX_SCREEN_COORD;
+    int bound_check_result = bound_check(new_x, new_y, state->active_output);
 
-    /* We're still on screen, all good */
-    return position + offset;
+    if (!(bound_check_result & X_OUT))
+        state->mouse_x = new_x;
+    
+    if (!(bound_check_result & Y_OUT))
+        state->mouse_y = new_y;
 }
 
 /* Implement basic mouse acceleration and define your own curve.
@@ -74,8 +74,7 @@ void update_mouse_position(device_t *state, mouse_values_t *values) {
     int offset_y = accelerate(values->move_y) * (current->speed_y >> reduce_speed);
 
     /* Update movement */
-    state->mouse_x = move_and_keep_on_screen(state->mouse_x, offset_x);
-    state->mouse_y = move_and_keep_on_screen(state->mouse_y, offset_y);
+    move_and_keep_on_screen(state, offset_x, offset_y);
 
     /* Update buttons state */
     state->mouse_buttons = values->buttons;
@@ -176,19 +175,29 @@ void check_screen_switch(const mouse_values_t *values, device_t *state) {
         return;
 
     if (state->active_output == OUTPUT_A) {
-        int other_x = x_coord_abs_to_B(x_coord_A_to_abs(new_x));
-        int other_y = y_coord_abs_to_B(y_coord_A_to_abs(new_y));
+        int abs_x = current_x_coord_A_to_abs(new_x);
+        int other_x = current_x_coord_abs_to_B(abs_x);
+        int abs_y = current_y_coord_A_to_abs(new_y);
+        int other_y = current_y_coord_abs_to_B(abs_y);
+#ifdef DH_DEBUG
+        dh_debug_printf("\rold(%05d, %05d), move(%03d, %03d), new(%05d, %05d), abs(%04d, %04d), other(%05d, %05d)"
+            , state->mouse_x, state->mouse_y, values->move_x, values->move_y
+            , new_x, new_y
+            , abs_x, abs_y, other_x, other_y);
+#endif
         // Not moving onto B
-        if (!coord_on_screen(other_x, other_y))
+        if (bound_check(other_x, other_y, OUTPUT_B))
             return;
         switch_screen(state, other_x, other_y, OUTPUT_B);
     }
 
     if (state->active_output == OUTPUT_B) {
-        int other_x = x_coord_abs_to_A(x_coord_B_to_abs(new_x));
-        int other_y = y_coord_abs_to_A(y_coord_B_to_abs(new_y));
+        int abs_x = current_x_coord_B_to_abs(new_x);
+        int other_x = current_x_coord_abs_to_A(abs_x);
+        int abs_y = current_y_coord_B_to_abs(new_y);
+        int other_y = current_y_coord_abs_to_A(abs_y);
         // Not moving onto A
-        if (!coord_on_screen(other_x, other_y))
+        if (bound_check(other_x, other_y, OUTPUT_A))
             return;
         switch_screen(state, other_x, other_y, OUTPUT_A);
     }

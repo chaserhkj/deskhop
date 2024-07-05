@@ -20,6 +20,7 @@
  * ================================================== */
 
 #include "main.h"
+#include "screens.h"
 
 /* ================================================== *
  * Perform initial UART setup
@@ -100,6 +101,9 @@ void initial_setup(device_t *state) {
 
     /* Update the core1 initial pass timestamp before enabling the watchdog */
     state->core1_last_loop_pass = time_us_64();
+
+    // Set current_screens to the only one we have now
+    state->current_screens = screens_info_array;
 
     /* Setup the watchdog so we reboot and recover from a crash */
     watchdog_enable(WATCHDOG_TIMEOUT, WATCHDOG_PAUSE_ON_DEBUG);
