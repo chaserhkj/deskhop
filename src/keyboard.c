@@ -24,6 +24,7 @@
 hotkey_combo_t hotkeys[] = {
     /* Main keyboard switching hotkey */
     {.modifier       = 0,
+     .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTSHIFT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -31,6 +32,7 @@ hotkey_combo_t hotkeys[] = {
 
     /* Pressing right CTRL + right SHIFT + Backspace toggles the slow mouse mode */
     {.modifier       = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_LEFTCTRL,
+     .modifier_mask  = 0,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -39,6 +41,7 @@ hotkey_combo_t hotkeys[] = {
 
     /* Switch lock */
     {.modifier       = KEYBOARD_MODIFIER_LEFTALT,
+     .modifier_mask  = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTSHIFT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -47,6 +50,7 @@ hotkey_combo_t hotkeys[] = {
 
     /* Screen lock */
     {.modifier       = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_LEFTSHIFT,
+     .modifier_mask  = 0,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -84,6 +88,7 @@ hotkey_combo_t hotkeys[] = {
 
     /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_LEFTCTRL,
+     .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -92,6 +97,7 @@ hotkey_combo_t hotkeys[] = {
 
     /* Hold down left shift + right shift + F12 + B ==> firmware upgrade mode for board B (mouse) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTCTRL,
+     .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
@@ -115,6 +121,9 @@ bool key_in_report(uint8_t key, const hid_keyboard_report_t *report) {
 
 /* Check if the current report matches a specific hotkey passed on */
 bool check_specific_hotkey(hotkey_combo_t keypress, const hid_keyboard_report_t *report) {
+    // If masked modifiers are pressed, ignore
+    if (keypress.modifier & report->modifier)
+        return false;
     /* We expect all modifiers specified to be detected in the report */
     if (keypress.modifier != (report->modifier & keypress.modifier))
         return false;
