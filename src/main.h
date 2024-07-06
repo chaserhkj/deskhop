@@ -113,7 +113,7 @@ enum packet_type_e {
 #endif
 };
 
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 // Host message types
 enum host_msg_type_e {
     SET_SCREENS_INFO_HOST_MSG = 1,
@@ -234,7 +234,7 @@ typedef struct {
     bool (*bound_check)(int* x, int* y, int dx, int dy, int output);
 } screens_info_t;
 
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 // host messaging
 typedef struct {
     enum host_msg_type_e type;
@@ -324,7 +324,7 @@ void receive_char(uart_packet_t *, device_t *);
 void send_packet(const uint8_t *, enum packet_type_e, int);
 void send_value(const uint8_t, enum packet_type_e);
 
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 // Host side messaging and control through raw hid
 void process_host_message(uint8_t const*, uint16_t);
 void send_host_message(const uint8_t *, enum host_msg_type_e, int);
@@ -374,7 +374,7 @@ void handle_debug_msg(uart_packet_t *, device_t *);
 #endif
 #endif
 
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 // Host msg handlers
 void host_handle_set_screens_info_msg(uint8_t const*, uint16_t);
 #endif

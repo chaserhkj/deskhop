@@ -64,7 +64,7 @@ uint8_t const *tud_descriptor_device_cb(void) {
 uint8_t const desc_hid_report[] = {TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD)),
                                    TUD_HID_REPORT_DESC_ABSMOUSE(HID_REPORT_ID(REPORT_ID_MOUSE)),
                                    TUD_HID_REPORT_DESC_CONSUMER_CTRL(HID_REPORT_ID(REPORT_ID_CONSUMER)),
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
                                    TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_EP_BUFSIZE, HID_REPORT_ID(REPORT_ID_GENERIC))
 #endif
                                    };

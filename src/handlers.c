@@ -36,20 +36,20 @@ void output_toggle_hotkey_handler(device_t *state, hid_keyboard_report_t *report
 
 /* This key combo puts board A in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_A(device_t *state, hid_keyboard_report_t *report) {
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
     reset_usb_boot(1 << PICO_DEFAULT_LED_PIN, 0);
 #endif
-#if BOARD_ROLE == ROLE_B
+#if BOARD_ROLE == PICO_B
     send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
 #endif
 };
 
 /* This key combo puts board B in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_B(device_t *state, hid_keyboard_report_t *report) {
-#if BOARD_ROLE == ROLE_B
+#if BOARD_ROLE == PICO_B
     reset_usb_boot(1 << PICO_DEFAULT_LED_PIN, 0);
 #endif
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
     send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
 #endif
 };
@@ -182,7 +182,7 @@ void handle_debug_msg(uart_packet_t * packet, device_t * state) {
 #endif
 #endif
 
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 // Host side messaging handlers
 
 // handling set screens info command from host

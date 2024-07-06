@@ -45,7 +45,7 @@ void tud_hid_set_report_cb(uint8_t instance,
                            uint8_t const *buffer,
                            uint16_t bufsize) {
     
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
     // Handle generic message from the host
     if (report_id == 0 && report_type == HID_REPORT_TYPE_OUTPUT) {
         process_host_message(buffer, bufsize);

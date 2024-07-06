@@ -1,4 +1,4 @@
-#if BOARD_ROLE == ROLE_A
+#if BOARD_ROLE == PICO_A
 #include "main.h"
 
 const host_msg_handler_t host_msg_handler[] = {
