@@ -169,8 +169,17 @@ int dh_debug_printf(const char *format, ...) {
 
     int string_len = vsnprintf(buffer, 512, format, args);
 
+#if BOARD_ROLE == PICO_A
     tud_cdc_n_write(0, buffer, string_len);
     tud_cdc_write_flush();
+#endif
+#if BOARD_ROLE == PICO_B
+    for (int i = 0; i < string_len; i = i + 8) {
+        uint8_t segment[8];
+        memcpy(segment, buffer + i, 8);
+        send_packet(segment, DEBUG_MSG, 8);
+    }
+#endif
 
     va_end(args);
     return string_len;

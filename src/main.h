@@ -110,6 +110,9 @@ enum packet_type_e {
     HEARTBEAT_MSG        = 13,
     OUTPUT_CONFIG_MSG    = 14,
     CONSUMER_CONTROL_MSG = 15,
+#ifdef DH_DEBUG
+    DEBUG_MSG            = 16,
+#endif
 };
 
 /*
@@ -387,6 +390,13 @@ void handle_fw_upgrade_msg(uart_packet_t *, device_t *);
 void handle_wipe_config_msg(uart_packet_t *, device_t *);
 void handle_screensaver_msg(uart_packet_t *, device_t *);
 void handle_consumer_control_msg(uart_packet_t *, device_t *);
+
+#ifdef DH_DEBUG
+#if BOARD_ROLE == PICO_A
+void handle_debug_msg(uart_packet_t *, device_t *);
+#endif
+#endif
+
 
 void switch_output(device_t *, uint8_t);
 

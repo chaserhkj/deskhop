@@ -240,6 +240,18 @@ void handle_consumer_control_msg(uart_packet_t *packet, device_t *state) {
     tud_hid_n_report(0, REPORT_ID_CONSUMER, &packet->data[0], CONSUMER_CONTROL_LENGTH);
 }
 
+#ifdef DH_DEBUG
+#if BOARD_ROLE == PICO_A
+void handle_debug_msg(uart_packet_t * packet, device_t * state) {
+    char buffer[9] = {0};
+    memcpy(buffer, packet->data, 8);
+    int string_len = strlen(buffer);
+    tud_cdc_n_write(0, buffer, string_len);
+    tud_cdc_write_flush();
+}
+#endif
+#endif
+
 /**==================================================== *
  * ==============  Output Switch Routines  ============ *
  * ==================================================== */

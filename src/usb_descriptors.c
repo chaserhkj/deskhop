@@ -108,8 +108,10 @@ char const *string_desc_arr[] = {
     "DeskHop Switch",           // 2: Product
     "0",                        // 3: Serials, should use chip ID
     "MouseHelper",              // 4: Relative mouse to work around OS issues
+#if BOARD_ROLE == PICO_A
 #ifdef DH_DEBUG
     "Debug Interface", // 5: Debug Interface
+#endif
 #endif
 };
 
@@ -176,11 +178,22 @@ enum { ITF_NUM_TOTAL = 2 };
 
 #else
 
+#if BOARD_ROLE == PICO_B
+
+enum { ITF_NUM_TOTAL = 2 };
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
+
+#endif
+
+#if BOARD_ROLE == PICO_A
+
 enum { ITF_NUM_CDC = 2, ITF_NUM_TOTAL = 3 };
 #define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN + TUD_CDC_DESC_LEN)
 #define EPNUM_CDC_NOTIF  0x83
 #define EPNUM_CDC_OUT    0x04
 #define EPNUM_CDC_IN     0x84
+
+#endif
 
 #endif
 
@@ -207,9 +220,11 @@ uint8_t const desc_configuration[] = {
                        1),
 
 #ifdef DH_DEBUG
+#if BOARD_ROLE == PICO_A
     // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
     TUD_CDC_DESCRIPTOR(
         ITF_NUM_CDC, STRID_DEBUG, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, CFG_TUD_CDC_EP_BUFSIZE),
+#endif
 #endif
 
 };
