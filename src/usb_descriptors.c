@@ -63,7 +63,10 @@ uint8_t const *tud_descriptor_device_cb(void) {
 
 uint8_t const desc_hid_report[] = {TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD)),
                                    TUD_HID_REPORT_DESC_ABSMOUSE(HID_REPORT_ID(REPORT_ID_MOUSE)),
-                                   TUD_HID_REPORT_DESC_CONSUMER_CTRL(HID_REPORT_ID(REPORT_ID_CONSUMER))
+                                   TUD_HID_REPORT_DESC_CONSUMER_CTRL(HID_REPORT_ID(REPORT_ID_CONSUMER)),
+#if BOARD_ROLE == ROLE_A
+                                   TUD_HID_REPORT_DESC_GENERIC_INOUT(CFG_TUD_HID_EP_BUFSIZE, HID_REPORT_ID(REPORT_ID_GENERIC))
+#endif
                                    };
 
 uint8_t const desc_hid_report_relmouse[] = {TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(REPORT_ID_RELMOUSE))};
@@ -174,7 +177,7 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 #ifndef DH_DEBUG
 
 enum { ITF_NUM_TOTAL = 2 };
-#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
+#define CONFIG_TOTAL_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN) 
 
 #else
 

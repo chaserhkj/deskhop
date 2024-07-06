@@ -102,15 +102,22 @@ enum packet_type_e {
     MOUSE_ZOOM_MSG       = 5,
     KBD_SET_REPORT_MSG   = 6,
     SWITCH_LOCK_MSG      = 7,
-    FLASH_LED_MSG        = 9,
-    WIPE_CONFIG_MSG      = 10,
-    SWAP_OUTPUTS_MSG     = 11,
-    HEARTBEAT_MSG        = 12,
-    CONSUMER_CONTROL_MSG = 14,
+    FLASH_LED_MSG        = 8,
+    WIPE_CONFIG_MSG      = 9,
+    SWAP_OUTPUTS_MSG     = 10,
+    HEARTBEAT_MSG        = 11,
+    CONSUMER_CONTROL_MSG = 12,
 #ifdef DH_DEBUG
-    DEBUG_MSG            = 15,
+    DEBUG_MSG            = 13,
 #endif
 };
+
+#if BOARD_ROLE == ROLE_A
+// Host message types
+enum host_msg_type_e {
+    ECHO_HOST_MSG = 1,
+};
+#endif
 
 /*
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -226,6 +233,14 @@ typedef struct {
     bool (*bound_check)(int* x, int* y, int dx, int dy, int output);
 } screens_info_t;
 
+#if BOARD_ROLE == ROLE_A
+// host messaging
+typedef struct {
+    enum host_msg_type_e type;
+    void (*handler)(const uint8_t *, uint16_t);
+} host_msg_handler_t;
+#endif
+
 typedef struct TU_ATTR_PACKED {
     uint8_t buttons;
     int16_t x;
@@ -308,6 +323,12 @@ void receive_char(uart_packet_t *, device_t *);
 void send_packet(const uint8_t *, enum packet_type_e, int);
 void send_value(const uint8_t, enum packet_type_e);
 
+#if BOARD_ROLE == ROLE_A
+// Host side messaging and control through raw hid
+void process_host_message(uint8_t const*, uint16_t);
+void send_host_message(const uint8_t *, enum host_msg_type_e, int);
+#endif
+
 /*********  LEDs  **********/
 void restore_leds(device_t *);
 void blink_led(device_t *);
@@ -351,6 +372,10 @@ void handle_debug_msg(uart_packet_t *, device_t *);
 #endif
 #endif
 
+#if BOARD_ROLE == ROLE_A
+// Host msg handlers
+void host_handle_echo_msg(uint8_t const*, uint16_t);
+#endif
 
 void switch_output(device_t *, uint8_t);
 

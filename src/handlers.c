@@ -167,6 +167,19 @@ void handle_debug_msg(uart_packet_t * packet, device_t * state) {
 #endif
 #endif
 
+#if BOARD_ROLE == ROLE_A
+// Host side messaging handlers
+
+void host_handle_echo_msg(uint8_t const* data, uint16_t length){
+    uint8_t buffer[CFG_TUD_HID_EP_BUFSIZE] = {0};
+    memcpy(buffer, data, length);
+    send_host_message(data, ECHO_HOST_MSG, length);
+#ifdef DH_DEBUG
+    dh_debug_printf("HOST: %s\r\n", buffer);
+#endif
+}
+#endif
+
 /**==================================================== *
  * ==============  Output Switch Routines  ============ *
  * ==================================================== */

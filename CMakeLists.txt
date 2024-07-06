@@ -45,6 +45,7 @@ set(COMMON_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/src/screens.c
         ${CMAKE_CURRENT_LIST_DIR}/src/led.c
         ${CMAKE_CURRENT_LIST_DIR}/src/uart.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/host_msg.c
         ${CMAKE_CURRENT_LIST_DIR}/src/usb.c
         ${CMAKE_CURRENT_LIST_DIR}/src/main.c
         ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/pio_usb/dcd_pio_usb.c
