@@ -103,10 +103,6 @@ void handle_mouse_abs_uart_msg(uart_packet_t *packet, device_t *state) {
     mouse_report_t *mouse_report = (mouse_report_t *)packet->data;
     queue_mouse_report(mouse_report, state);
 
-    state->mouse_x       = mouse_report->x;
-    state->mouse_y       = mouse_report->y;
-    state->mouse_buttons = mouse_report->buttons;
-
     state->last_activity[BOARD_ROLE] = time_us_64();
 }
 
