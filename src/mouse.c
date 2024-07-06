@@ -113,11 +113,6 @@ void check_screen_switch(const mouse_values_t *values, device_t *state) {
         int other_x = current_x_coord_abs_to_B(abs_x);
         int abs_y = current_y_coord_A_to_abs(new_y);
         int other_y = current_y_coord_abs_to_B(abs_y);
-#ifdef DH_DEBUG
-        dh_debug_printf("AO(%05d,%05d)M(%03d,%03d)A(%04d,%04d)OT(%07d,%07d)\r\n"
-            , state->mouse_x, state->mouse_y, values->move_x, values->move_y
-            , abs_x, abs_y, other_x, other_y);
-#endif
         // Not moving onto B
         if (!bound_check(&other_x, &other_y, 0, 0, OUTPUT_B))
             return;
@@ -129,11 +124,6 @@ void check_screen_switch(const mouse_values_t *values, device_t *state) {
         int other_x = current_x_coord_abs_to_A(abs_x);
         int abs_y = current_y_coord_B_to_abs(new_y);
         int other_y = current_y_coord_abs_to_A(abs_y);
-#ifdef DH_DEBUG
-        dh_debug_printf("BO(%05d,%05d)M(%03d,%03d)A(%04d,%04d)OT(%07d,%07d)\r\n"
-            , state->mouse_x, state->mouse_y, values->move_x, values->move_y
-            , abs_x, abs_y, other_x, other_y);
-#endif
         // Not moving onto A
         if (!bound_check(&other_x, &other_y, 0, 0, OUTPUT_A))
             return;
