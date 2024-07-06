@@ -57,28 +57,6 @@ hotkey_combo_t hotkeys[] = {
      .acknowledge    = true,
      .action_handler = &screenlock_hotkey_handler},
 
-    // Disabled hotkeys
-    // /* Store config */
-    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-    //  .keys           = {HID_KEY_BACKSPACE},
-    //  .key_count      = 1,
-    //  .pass_to_os     = true,
-    //  .action_handler = &output_config_hotkey_handler},
-
-    // /* Erase stored config */
-    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-    //  .keys           = {HID_KEY_F12, HID_KEY_N},
-    //  .key_count      = 2,
-    //  .acknowledge    = true,
-    //  .action_handler = &wipe_config_hotkey_handler},
-
-    /* Record switch y coordinate  */
-    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-    //  .keys           = {HID_KEY_F12, HID_KEY_G},
-    //  .key_count      = 2,
-    //  .acknowledge    = true,
-    //  .action_handler = &screen_border_hotkey_handler},
-
     /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_LEFTCTRL,
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,

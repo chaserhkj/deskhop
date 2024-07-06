@@ -53,13 +53,9 @@
  * 
  * */
 
-/* Output A values */
-#define MOUSE_SPEED_A_FACTOR_X 16
-#define MOUSE_SPEED_A_FACTOR_Y 16
-
-/* Output B values  */
-#define MOUSE_SPEED_B_FACTOR_X 16
-#define MOUSE_SPEED_B_FACTOR_Y 16
+// Mouse base resolution 
+// Mouse speed will change inversely with this value
+#define MOUSE_BASE_RESOLUTION 2000
 
 #define JUMP_THRESHOLD 0
 

@@ -32,25 +32,6 @@ void output_toggle_hotkey_handler(device_t *state, hid_keyboard_report_t *report
     switch_output(state, state->active_output);
 };
 
-void get_border_position(device_t *state, border_size_t *border) {
-    /* To avoid having 2 different keys, if we're above half, it's the top coord */
-    if (state->mouse_y > (MAX_SCREEN_COORD / 2))
-        border->bottom = state->mouse_y;
-    else
-        border->top = state->mouse_y;
-}
-
-
-/* This key combo records switch y top coordinate for different-size monitors  */
-void screen_border_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
-    border_size_t *border = &state->config.output[state->active_output].border;
-    if (CURRENT_BOARD_IS_ACTIVE_OUTPUT) {
-        get_border_position(state, border);
-        save_config(state);
-    }
-
-    send_packet((uint8_t *)border, SYNC_BORDERS_MSG, sizeof(border_size_t));
-};
 
 /* This key combo puts board A in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_A(device_t *state, hid_keyboard_report_t *report) {
@@ -66,37 +47,6 @@ void fw_upgrade_hotkey_handler_B(device_t *state, hid_keyboard_report_t *report)
 void switchlock_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
     state->switch_lock ^= 1;
     send_value(state->switch_lock, SWITCH_LOCK_MSG);
-}
-
-/* This key combo configures multiple output parameters */
-void output_config_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
-    output_t *current = &state->config.output[state->active_output];
-
-    /* Pressing 1 or 2 with this hotkey sets the screen count */
-    if(key_in_report(HID_KEY_1, report))
-        current->screen_count = 1; 
-    else if (key_in_report(HID_KEY_2, report))
-        current->screen_count = 2; 
-    
-    /* Pressing 7, 8 or 9 with this hotkey sets the OS to LINUX, WIN or MAC */
-    else if (key_in_report(HID_KEY_7, report))
-        current->os = LINUX;
-    else if (key_in_report(HID_KEY_8, report))
-        current->os = WINDOWS;
-    else if (key_in_report(HID_KEY_9, report))
-        current->os = MACOS;
-    
-    /* If nothing matches, don't send or save anything but bail out. */
-    else 
-        return;
-
-    /* Save config and acknowledge */
-    save_config(state);
-    blink_led(state);
-
-    /* 4 bits are more than enough to transfer this */
-    uint8_t value = current->screen_count | (current->os << 4);
-    send_value(value, OUTPUT_CONFIG_MSG);
 }
 
 /* This key combo locks both outputs simultaneously */
@@ -129,13 +79,6 @@ void screenlock_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
             send_packet((uint8_t *)&release_keys, KEYBOARD_REPORT_MSG, KBD_REPORT_LENGTH);
         }
     }
-}
-
-/* When pressed, erases stored config in flash and loads defaults on both boards */
-void wipe_config_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
-    wipe_config();
-    load_config(state);
-    send_value(ENABLE, WIPE_CONFIG_MSG);
 }
 
 /* When pressed, toggles the current mouse zoom mode state */
@@ -196,19 +139,6 @@ void handle_switch_lock_msg(uart_packet_t *packet, device_t *state) {
     state->switch_lock = packet->data[0];
 }
 
-/* Handle border syncing message that lets the other device know about monitor height offset */
-void handle_sync_borders_msg(uart_packet_t *packet, device_t *state) {
-    border_size_t *border = &state->config.output[state->active_output].border;
-
-    if (CURRENT_BOARD_IS_ACTIVE_OUTPUT) {
-        get_border_position(state, border);
-        send_packet((uint8_t *)border, SYNC_BORDERS_MSG, sizeof(border_size_t));
-    } else
-        memcpy(border, packet->data, sizeof(border_size_t));
-
-    save_config(state);
-}
-
 /* When this message is received, flash the locally attached LED to verify serial comms */
 void handle_flash_led_msg(uart_packet_t *packet, device_t *state) {
     blink_led(state);
@@ -218,12 +148,6 @@ void handle_flash_led_msg(uart_packet_t *packet, device_t *state) {
 void handle_wipe_config_msg(uart_packet_t *packet, device_t *state) {
     wipe_config();
     load_config(state);
-}
-
-void handle_output_config_msg(uart_packet_t *packet, device_t *state) {
-    state->config.output[state->active_output].os = packet->data[0] >> 4;
-    state->config.output[state->active_output].screen_count = packet->data[0] & 0x0F;
-    save_config(state);
 }
 
 /* Process consumer control keyboard message. Send immediately, w/o queing */

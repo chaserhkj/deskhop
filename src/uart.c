@@ -52,10 +52,8 @@ const uart_handler_t uart_handler[] = {
     {.type = MOUSE_ZOOM_MSG, .handler = handle_mouse_zoom_msg},
     {.type = KBD_SET_REPORT_MSG, .handler = handle_set_report_msg},
     {.type = SWITCH_LOCK_MSG, .handler = handle_switch_lock_msg},
-    {.type = SYNC_BORDERS_MSG, .handler = handle_sync_borders_msg},
     {.type = FLASH_LED_MSG, .handler = handle_flash_led_msg},
     {.type = WIPE_CONFIG_MSG, .handler = handle_wipe_config_msg},
-    {.type = OUTPUT_CONFIG_MSG, .handler = handle_output_config_msg},
     {.type = CONSUMER_CONTROL_MSG, .handler = handle_consumer_control_msg},    
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A

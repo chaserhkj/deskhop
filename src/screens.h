@@ -77,3 +77,23 @@ static inline int current_y_coord_abs_to_B(int y) {
 static inline bool bound_check(int* x, int* y, int dx, int dy, int output) {
     return global_state.current_screens->bound_check(x, y, dx, dy, output);
 }
+
+static inline int get_x_speed() {
+    if (global_state.active_output == OUTPUT_A) {
+        return global_state.current_screens->width_A / MOUSE_BASE_RESOLUTION ;
+    }
+    if (global_state.active_output == OUTPUT_B) {
+        return global_state.current_screens->width_B / MOUSE_BASE_RESOLUTION ;
+    }
+    return 16;
+}
+
+static inline int get_y_speed() {
+    if (global_state.active_output == OUTPUT_A) {
+        return global_state.current_screens->height_A / MOUSE_BASE_RESOLUTION ;
+    }
+    if (global_state.active_output == OUTPUT_B) {
+        return global_state.current_screens->height_B / MOUSE_BASE_RESOLUTION ;
+    }
+    return 16;
+}

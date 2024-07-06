@@ -102,12 +102,10 @@ enum packet_type_e {
     MOUSE_ZOOM_MSG       = 5,
     KBD_SET_REPORT_MSG   = 6,
     SWITCH_LOCK_MSG      = 7,
-    SYNC_BORDERS_MSG     = 8,
     FLASH_LED_MSG        = 9,
     WIPE_CONFIG_MSG      = 10,
     SWAP_OUTPUTS_MSG     = 11,
     HEARTBEAT_MSG        = 12,
-    OUTPUT_CONFIG_MSG    = 13,
     CONSUMER_CONTROL_MSG = 14,
 #ifdef DH_DEBUG
     DEBUG_MSG            = 15,
@@ -166,35 +164,14 @@ enum os_type_e {
     OTHER   = 255,
 };
 
-enum screen_pos_e {
-    LEFT   = 1,
-    RIGHT  = 2,
-    MIDDLE = 3,
-};
-
 enum itf_num_e {
     ITF_NUM_HID       = 0,
     ITF_NUM_HID_REL_M = 1,
 };
 
-typedef struct {
-    int top;    // When jumping from a smaller to a bigger screen, go to THIS top height
-    int bottom; // When jumping from a smaller to a bigger screen, go to THIS bottom
-                // height
-} border_size_t;
-
-// TODO: since we have screens.h to handle screen size and position
-// we should get rid of the screen primitives here to merge screens.h into here
 /* Define output parameters */
 typedef struct {
-    int number;                // Number of this output (e.g. OUTPUT_A = 0 etc)
-    int screen_count;          // How many monitors per output (e.g. Output A is Windows with 3 monitors)
-    int screen_index;          // Current active screen
-    int speed_x;               // Mouse speed per output, in direction X
-    int speed_y;               // Mouse speed per output, in direction Y
-    border_size_t border;      // Screen border size/offset to keep cursor at same height when switching
     enum os_type_e os;         // Operating system on this output
-    enum screen_pos_e pos;     // Screen position on this output
 } output_t;
 
 /* Data structure defining how configuration is stored */
@@ -350,24 +327,19 @@ void wipe_config(void);
 
 /*********  Handlers  **********/
 void output_toggle_hotkey_handler(device_t *, hid_keyboard_report_t *);
-void screen_border_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void fw_upgrade_hotkey_handler_A(device_t *, hid_keyboard_report_t *);
 void fw_upgrade_hotkey_handler_B(device_t *, hid_keyboard_report_t *);
 void mouse_zoom_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void all_keys_released_handler(device_t *);
 void switchlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void screenlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
-void output_config_hotkey_handler(device_t *, hid_keyboard_report_t *);
-void wipe_config_hotkey_handler(device_t *, hid_keyboard_report_t *);
 
 void handle_keyboard_uart_msg(uart_packet_t *, device_t *);
 void handle_mouse_abs_uart_msg(uart_packet_t *, device_t *);
 void handle_output_select_msg(uart_packet_t *, device_t *);
-void handle_output_config_msg(uart_packet_t *, device_t *);
 void handle_mouse_zoom_msg(uart_packet_t *, device_t *);
 void handle_set_report_msg(uart_packet_t *, device_t *);
 void handle_switch_lock_msg(uart_packet_t *, device_t *);
-void handle_sync_borders_msg(uart_packet_t *, device_t *);
 void handle_flash_led_msg(uart_packet_t *, device_t *);
 void handle_fw_upgrade_msg(uart_packet_t *, device_t *);
 void handle_wipe_config_msg(uart_packet_t *, device_t *);

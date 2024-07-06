@@ -59,7 +59,6 @@ int32_t accelerate(int32_t offset) {
 }
 
 void update_mouse_position(device_t *state, mouse_values_t *values) {
-    output_t *current    = &state->config.output[state->active_output];
     uint8_t reduce_speed = 0;
 
     /* Check if we are configured to move slowly */
@@ -67,8 +66,8 @@ void update_mouse_position(device_t *state, mouse_values_t *values) {
         reduce_speed = MOUSE_ZOOM_SCALING_FACTOR;
 
     /* Calculate movement */
-    int offset_x = accelerate(values->move_x) * (current->speed_x >> reduce_speed);
-    int offset_y = accelerate(values->move_y) * (current->speed_y >> reduce_speed);
+    int offset_x = accelerate(values->move_x) * ( get_x_speed() >> reduce_speed);
+    int offset_y = accelerate(values->move_y) * ( get_y_speed() >> reduce_speed);
 
     /* Update movement */
     move_and_keep_on_screen(state, offset_x, offset_y);
@@ -87,37 +86,6 @@ void output_mouse_report(mouse_report_t *report, device_t *state) {
     }
 }
 
-/* Calculate and return Y coordinate when moving from screen out_from to screen out_to */
-int16_t scale_y_coordinate(int screen_from, int screen_to, device_t *state) {
-    output_t *from = &state->config.output[screen_from];
-    output_t *to   = &state->config.output[screen_to];
-
-    int size_to   = to->border.bottom - to->border.top;
-    int size_from = from->border.bottom - from->border.top;
-
-    /* If sizes match, there is nothing to do */
-    if (size_from == size_to)
-        return state->mouse_y;
-
-    /* Moving from smaller ==> bigger screen
-       y_a = top + (((bottom - top) * y_b) / HEIGHT) */
-
-    if (size_from > size_to) {
-        return to->border.top + ((size_to * state->mouse_y) / MAX_SCREEN_COORD);
-    }
-
-    /* Moving from bigger ==> smaller screen
-       y_b = ((y_a - top) * HEIGHT) / (bottom - top) */
-
-    if (state->mouse_y < from->border.top)
-        return MIN_SCREEN_COORD;
-
-    if (state->mouse_y > from->border.bottom)
-        return MAX_SCREEN_COORD;
-
-    return ((state->mouse_y - from->border.top) * MAX_SCREEN_COORD) / size_from;
-}
-
 void switch_screen(
     device_t *state, int new_x, int new_y, int output_to) {
     unsigned mouse_y = (MOUSE_PARKING_POSITION == 0) ? MIN_SCREEN_COORD : /*TOP*/
@@ -130,37 +98,6 @@ void switch_screen(
     state->mouse_x = new_x;
     state->mouse_y = new_y;
 }
-
-// Not using this for now, since we only do Linux and Windows, with Windows only having
-// one output
-// void switch_desktop(device_t *state, output_t *output, int new_index, int direction) {
-//     /* Fix for MACOS: Send relative mouse movement here, one or two pixels in the 
-//        direction of movement, BEFORE absolute report sets X to 0 */
-//     mouse_report_t move_relative_one
-//         = {.x = (direction == LEFT) ? SCREEN_MIDPOINT - 2 : SCREEN_MIDPOINT + 2, .mode = RELATIVE};
-
-//     switch (output->os) {
-//         case MACOS:
-//             /* Once isn't reliable enough, but repeating it does the trick */
-//             for (int move_cnt=0; move_cnt<5; move_cnt++)
-//                 output_mouse_report(&move_relative_one, state);
-//             break;
-
-//         case WINDOWS:
-//             /* TODO: Switch to relative-only if index > 1, but keep tabs to switch back */
-//             state->relative_mouse = (new_index > 1);
-//             break;
-
-//         case LINUX:
-//         case OTHER:
-//             /* Linux should treat all desktops as a single virtual screen, so you should leave
-//             screen_count at 1 and it should just work */
-//             break;
-//     }
-
-//     state->mouse_x       = (direction == RIGHT) ? MIN_SCREEN_COORD : MAX_SCREEN_COORD;
-//     output->screen_index = new_index;
-// }
 
 // Customized to my own screen setup
 void check_screen_switch(const mouse_values_t *values, device_t *state) {
