@@ -7,6 +7,8 @@
 
 bool bound_check_simple(int* x, int* y, int dx, int dy, int output);
 
+void set_screens_info(uint8_t, bool);
+
 extern const screens_info_t screens_info_array[];
 
 static inline int x_coord_A_to_abs(const screens_info_t* screens_info, int x) { 

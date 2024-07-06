@@ -2,7 +2,7 @@
 #include "main.h"
 
 const host_msg_handler_t host_msg_handler[] = {
-    {.type = ECHO_HOST_MSG, .handler = host_handle_echo_msg},
+    {.type = SET_SCREENS_INFO_HOST_MSG, .handler = host_handle_set_screens_info_msg},
 };
 
 void process_host_message(uint8_t const* data, uint16_t length) {

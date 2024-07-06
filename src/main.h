@@ -107,15 +107,16 @@ enum packet_type_e {
     SWAP_OUTPUTS_MSG     = 10,
     HEARTBEAT_MSG        = 11,
     CONSUMER_CONTROL_MSG = 12,
+    SCREENS_INFO_MSG   = 13,
 #ifdef DH_DEBUG
-    DEBUG_MSG            = 13,
+    DEBUG_MSG            = 14,
 #endif
 };
 
 #if BOARD_ROLE == ROLE_A
 // Host message types
 enum host_msg_type_e {
-    ECHO_HOST_MSG = 1,
+    SET_SCREENS_INFO_HOST_MSG = 1,
 };
 #endif
 
@@ -365,6 +366,7 @@ void handle_flash_led_msg(uart_packet_t *, device_t *);
 void handle_fw_upgrade_msg(uart_packet_t *, device_t *);
 void handle_wipe_config_msg(uart_packet_t *, device_t *);
 void handle_consumer_control_msg(uart_packet_t *, device_t *);
+void handle_screens_info_msg(uart_packet_t *, device_t *);
 
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A
@@ -374,7 +376,7 @@ void handle_debug_msg(uart_packet_t *, device_t *);
 
 #if BOARD_ROLE == ROLE_A
 // Host msg handlers
-void host_handle_echo_msg(uint8_t const*, uint16_t);
+void host_handle_set_screens_info_msg(uint8_t const*, uint16_t);
 #endif
 
 void switch_output(device_t *, uint8_t);

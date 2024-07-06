@@ -94,3 +94,12 @@ const screens_info_t screens_info_array[] = {{
     .bound_check = &bound_check_screen
 }};
 
+
+// set screens info, always reset mouse position to 0, 0 as well
+void set_screens_info(uint8_t index, bool sync) {
+    if (index >= ARRAY_SIZE(screens_info_array)) return;
+    global_state.current_screens = screens_info_array + index;
+    global_state.mouse_x = 0;
+    global_state.mouse_y = 0;
+    if (sync) send_value(index, SCREENS_INFO_MSG);
+}

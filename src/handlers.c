@@ -16,6 +16,7 @@
  */
 
 #include "main.h"
+#include "screens.h"
 
 // TODO: get rid of border/screen handling code here that is no longer needed
 /**=================================================== *
@@ -155,6 +156,14 @@ void handle_consumer_control_msg(uart_packet_t *packet, device_t *state) {
     tud_hid_n_report(0, REPORT_ID_CONSUMER, &packet->data[0], CONSUMER_CONTROL_LENGTH);
 }
 
+// handling synced screens info
+void handle_screens_info_msg(uart_packet_t *packet, device_t *state) {
+    uint8_t layout_index = packet->data[0];
+    set_screens_info(layout_index, false);
+
+    restore_leds(state);
+}
+
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A
 void handle_debug_msg(uart_packet_t * packet, device_t * state) {
@@ -170,13 +179,12 @@ void handle_debug_msg(uart_packet_t * packet, device_t * state) {
 #if BOARD_ROLE == ROLE_A
 // Host side messaging handlers
 
-void host_handle_echo_msg(uint8_t const* data, uint16_t length){
-    uint8_t buffer[CFG_TUD_HID_EP_BUFSIZE] = {0};
-    memcpy(buffer, data, length);
-    send_host_message(data, ECHO_HOST_MSG, length);
-#ifdef DH_DEBUG
-    dh_debug_printf("HOST: %s\r\n", buffer);
-#endif
+// handling set screens info command from host
+void host_handle_set_screens_info_msg(uint8_t const* data, uint16_t length){
+    uint8_t layout_index = data[0];
+    set_screens_info(layout_index, true);
+
+    restore_leds(&global_state);
 }
 #endif
 
