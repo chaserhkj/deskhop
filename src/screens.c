@@ -1,57 +1,84 @@
 #include "screens.h"
 
-uint8_t bound_check_simple(int x, int y, int output) {
-    uint8_t result = 0;
-    if (x < MIN_SCREEN_COORD) {
-        result = result | X_OUT;
+bool bound_check_simple(int* x, int* y, int dx, int dy, int output) {
+    bool in_screen = true;
+    int new_x = *x + dx;
+    int new_y = *y + dy;
+    if (new_x < MIN_SCREEN_COORD) {
+        in_screen = false;
+        new_x = MIN_SCREEN_COORD;
     }
-    if (x > MAX_SCREEN_COORD) {
-        result = result | X_OUT;
-        result = result | X_OVERFLOW;
+    if (new_x > MAX_SCREEN_COORD) {
+        in_screen = false;
+        new_x = MAX_SCREEN_COORD;
     }
-    if (y < MIN_SCREEN_COORD) {
-        result = result | Y_OUT;
+    if (new_y < MIN_SCREEN_COORD) {
+        in_screen = false;
+        new_y = MIN_SCREEN_COORD;
     }
-    if (y > MAX_SCREEN_COORD) {
-        result = result | Y_OUT;
-        result = result | Y_OVERFLOW;
+    if (new_y > MAX_SCREEN_COORD) {
+        in_screen = false;
+        new_y = MAX_SCREEN_COORD;
     }
-    return result;
+    *x = new_x;
+    *y = new_y;
+    return in_screen;
 }
 
-static uint8_t bound_check_screen(int x, int y, int output) {
-    if (output == OUTPUT_B) return bound_check_simple(x, y, output);
-    int result = 0;
+// 1920 * MAX_SCREEN_COORD / (1920 + 1080)
+#define SCREEN_X_ALT_BOUND 20970
+// (1440 + 1080 - 1920) * MAX_SCREEN_COORD / (1440 + 1080)
+#define SCREEN_Y_ALT_BOUND_1 7801
+// 1080 * MAX_SCREEN_COORD / (1440 + 1080)
+#define SCREEN_Y_ALT_BOUND_2 14043
+
+static bool bound_check_screen(int* x, int* y, int dx, int dy, int output) {
+    if (output == OUTPUT_B) return bound_check_simple(x, y, dx, dy, output);
+    bool in_screen = true;
+    int new_x = *x + dx;
+    int new_y = *y + dy;
     if (output == OUTPUT_A) {
-        int abs_x = x_coord_A_to_abs(screens_info_array, x);
-        int abs_y = y_coord_A_to_abs(screens_info_array, y);
-        if (abs_x < 0 ) {
-            result = result | X_OUT;
+        if (new_x < MIN_SCREEN_COORD) {
+            in_screen = false;
+            new_x = MIN_SCREEN_COORD;
         }
-        if (abs_x > 1920 && abs_y <= 1440 + 1080 - 1920) {
-            result = result | X_OUT;
-            result = result | X_OVERFLOW;
+        if (new_x > MAX_SCREEN_COORD) {
+            in_screen = false;
+            new_x = MAX_SCREEN_COORD;
         }
-        if (abs_x > 1920 + 1080 && abs_y > 1440 + 1080 - 1920) {
-            result = result | X_OUT;
-            result = result | X_OVERFLOW;
+        if (new_y < MIN_SCREEN_COORD) {
+            in_screen = false;
+            new_y = MIN_SCREEN_COORD;
         }
-        if (abs_y < 0 && abs_x <= 1920) {
-            result = result | Y_OUT;
+        if (new_y > MAX_SCREEN_COORD) {
+            in_screen = false;
+            new_y = MAX_SCREEN_COORD;
         }
-        if (abs_y < 1440 + 1080 - 1920 && abs_x > 1920) {
-            result = result | Y_OUT;
+
+        if (new_x > SCREEN_X_ALT_BOUND && *y < SCREEN_Y_ALT_BOUND_1) {
+            in_screen = false;
+            new_x = SCREEN_X_ALT_BOUND;
         }
-        if (abs_y > 1080 && abs_x <= 1920) {
-            result = result | Y_OUT;
-            result = result | Y_OVERFLOW;
+
+        if (new_y < SCREEN_Y_ALT_BOUND_1 && *x > SCREEN_X_ALT_BOUND) {
+            in_screen = false;
+            new_y = SCREEN_Y_ALT_BOUND_1;
         }
-        if (abs_y > 1440 + 1080 && abs_x > 1920) {
-            result = result | Y_OUT;
-            result = result | Y_OVERFLOW;
+
+        if (new_y > SCREEN_Y_ALT_BOUND_2 && *x < SCREEN_X_ALT_BOUND) {
+            in_screen = false;
+            new_y = SCREEN_Y_ALT_BOUND_2;
+        }
+        
+        if (new_x < SCREEN_X_ALT_BOUND && *y > SCREEN_Y_ALT_BOUND_2) {
+            in_screen = false;
+            new_x = SCREEN_X_ALT_BOUND;
+
         }
     }
-    return result;
+    *x = new_x;
+    *y = new_y;
+    return in_screen;
 }
 
 
@@ -61,7 +88,7 @@ const screens_info_t screens_info_array[] = {{
     .x_offset_A = 0,
     .y_offset_A = 0,
     .height_B = 1440,
-    .width_B = 2048,
+    .width_B = 2560,
     .x_offset_B = 1920 - 2560,
     .y_offset_B = 1080 - 0,
     .bound_check = &bound_check_screen

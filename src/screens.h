@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-uint8_t bound_check_simple(int x, int y, int output);
+bool bound_check_simple(int* x, int* y, int dx, int dy, int output);
 
 extern const screens_info_t screens_info_array[];
 
@@ -74,6 +74,6 @@ static inline int current_y_coord_abs_to_B(int y) {
 }
 
 // Check if coord is on screen
-static inline int bound_check(int x, int y, int output) {
-    return global_state.current_screens->bound_check(x, y, output);
+static inline bool bound_check(int* x, int* y, int dx, int dy, int output) {
+    return global_state.current_screens->bound_check(x, y, dx, dy, output);
 }

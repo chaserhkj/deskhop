@@ -252,15 +252,13 @@ typedef struct {
     int32_t y_offset_A;
     int32_t x_offset_B;
     int32_t y_offset_B;
-    uint8_t (*bound_check)(int x, int y, int output);
+    // Checks if x + dx, y + dy is in the screen, updates x and y, then
+    // corrects them to be in the screen
+    // Returns true if no correction happened (updated coords already in screen)
+    // Note that as a consequence of this logic, when dx == 0 && dy == 0, no updates
+    // will happen
+    bool (*bound_check)(int* x, int* y, int dx, int dy, int output);
 } screens_info_t;
-
-enum bound_check_result_e {
-    X_OUT = 1,
-    X_OVERFLOW = 1 << 1,
-    Y_OUT = 1 << 2,
-    Y_OVERFLOW = 1 << 3,
-};
 
 typedef struct TU_ATTR_PACKED {
     uint8_t buttons;
