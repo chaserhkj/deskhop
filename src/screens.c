@@ -25,14 +25,16 @@ bool bound_check_simple(int* x, int* y, int dx, int dy, int output) {
     return in_screen;
 }
 
-// 1920 * MAX_SCREEN_COORD / (1920 + 1080)
-#define SCREEN_X_ALT_BOUND 20970
+// (2560 - 1920) * MAX_SCREEN_COORD / (2560 + 1080)
+#define SCREEN_0_X_ALT_BOUND_1 5761
+// 2560 * MAX_SCREEN_COORD / (2560 + 1080)
+#define SCREEN_0_X_ALT_BOUND_2 23044
 // (1440 + 1080 - 1920) * MAX_SCREEN_COORD / (1440 + 1080)
-#define SCREEN_Y_ALT_BOUND_1 7801
+#define SCREEN_0_Y_ALT_BOUND_1 7801
 // 1080 * MAX_SCREEN_COORD / (1440 + 1080)
-#define SCREEN_Y_ALT_BOUND_2 14043
+#define SCREEN_0_Y_ALT_BOUND_2 14043
 
-static bool bound_check_screen(int* x, int* y, int dx, int dy, int output) {
+static bool bound_check_screen_0(int* x, int* y, int dx, int dy, int output) {
     if (output == OUTPUT_B) return bound_check_simple(x, y, dx, dy, output);
     bool in_screen = true;
     int new_x = *x + dx;
@@ -55,24 +57,79 @@ static bool bound_check_screen(int* x, int* y, int dx, int dy, int output) {
             new_y = MAX_SCREEN_COORD;
         }
 
-        if (new_x > SCREEN_X_ALT_BOUND && *y < SCREEN_Y_ALT_BOUND_1) {
+        if (new_x < SCREEN_0_X_ALT_BOUND_1 && *y < SCREEN_0_Y_ALT_BOUND_2) {
             in_screen = false;
-            new_x = SCREEN_X_ALT_BOUND;
+            new_x = SCREEN_0_X_ALT_BOUND_1;
         }
 
-        if (new_y < SCREEN_Y_ALT_BOUND_1 && *x > SCREEN_X_ALT_BOUND) {
+        if (new_y < SCREEN_0_Y_ALT_BOUND_2 && *x < SCREEN_0_X_ALT_BOUND_1) {
             in_screen = false;
-            new_y = SCREEN_Y_ALT_BOUND_1;
+            new_y = SCREEN_0_Y_ALT_BOUND_2;
         }
 
-        if (new_y > SCREEN_Y_ALT_BOUND_2 && *x < SCREEN_X_ALT_BOUND) {
+        if (new_y < SCREEN_0_Y_ALT_BOUND_1 && *x > SCREEN_0_X_ALT_BOUND_2) {
             in_screen = false;
-            new_y = SCREEN_Y_ALT_BOUND_2;
+            new_y = SCREEN_0_Y_ALT_BOUND_1;
+        }
+        if (new_x > SCREEN_0_X_ALT_BOUND_2 && *y < SCREEN_0_Y_ALT_BOUND_1) {
+            in_screen = false;
+            new_x = SCREEN_0_X_ALT_BOUND_2;
+        }
+    }
+    *x = new_x;
+    *y = new_y;
+    return in_screen;
+}
+
+
+// 1920 * MAX_SCREEN_COORD / (1920 + 1080)
+#define SCREEN_1_X_ALT_BOUND 20970
+// (1440 + 1080 - 1920) * MAX_SCREEN_COORD / (1440 + 1080)
+#define SCREEN_1_Y_ALT_BOUND_1 7801
+// 1080 * MAX_SCREEN_COORD / (1440 + 1080)
+#define SCREEN_1_Y_ALT_BOUND_2 14043
+
+static bool bound_check_screen_1(int* x, int* y, int dx, int dy, int output) {
+    if (output == OUTPUT_B) return bound_check_simple(x, y, dx, dy, output);
+    bool in_screen = true;
+    int new_x = *x + dx;
+    int new_y = *y + dy;
+    if (output == OUTPUT_A) {
+        if (new_x < MIN_SCREEN_COORD) {
+            in_screen = false;
+            new_x = MIN_SCREEN_COORD;
+        }
+        if (new_x > MAX_SCREEN_COORD) {
+            in_screen = false;
+            new_x = MAX_SCREEN_COORD;
+        }
+        if (new_y < MIN_SCREEN_COORD) {
+            in_screen = false;
+            new_y = MIN_SCREEN_COORD;
+        }
+        if (new_y > MAX_SCREEN_COORD) {
+            in_screen = false;
+            new_y = MAX_SCREEN_COORD;
+        }
+
+        if (new_x > SCREEN_1_X_ALT_BOUND && *y < SCREEN_1_Y_ALT_BOUND_1) {
+            in_screen = false;
+            new_x = SCREEN_1_X_ALT_BOUND;
+        }
+
+        if (new_y < SCREEN_1_Y_ALT_BOUND_1 && *x > SCREEN_1_X_ALT_BOUND) {
+            in_screen = false;
+            new_y = SCREEN_1_Y_ALT_BOUND_1;
+        }
+
+        if (new_y > SCREEN_1_Y_ALT_BOUND_2 && *x < SCREEN_1_X_ALT_BOUND) {
+            in_screen = false;
+            new_y = SCREEN_1_Y_ALT_BOUND_2;
         }
         
-        if (new_x < SCREEN_X_ALT_BOUND && *y > SCREEN_Y_ALT_BOUND_2) {
+        if (new_x < SCREEN_1_X_ALT_BOUND && *y > SCREEN_1_Y_ALT_BOUND_2) {
             in_screen = false;
-            new_x = SCREEN_X_ALT_BOUND;
+            new_x = SCREEN_1_X_ALT_BOUND;
 
         }
     }
@@ -84,6 +141,18 @@ static bool bound_check_screen(int* x, int* y, int dx, int dy, int output) {
 
 const screens_info_t screens_info_array[] = {{
     .height_A = 1440 + 1080,
+    .width_A = 2560 + 1080,
+    .x_offset_A = 0,
+    .y_offset_A = 0,
+    .height_B = 1440,
+    .width_B = 2560,
+    .x_offset_B = 0,
+    // Disjointed so no mouse initiated switches
+    .y_offset_B = 1440 + 1080 + 1000,
+    .bound_check = &bound_check_screen_0,
+},
+    {
+    .height_A = 1440 + 1080,
     .width_A = 1920 + 1080,
     .x_offset_A = 0,
     .y_offset_A = 0,
@@ -91,7 +160,7 @@ const screens_info_t screens_info_array[] = {{
     .width_B = 2560,
     .x_offset_B = 1920 - 2560,
     .y_offset_B = 1080 - 0,
-    .bound_check = &bound_check_screen
+    .bound_check = &bound_check_screen_1,
 }};
 
 
