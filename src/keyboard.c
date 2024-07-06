@@ -93,7 +93,7 @@ bool key_in_report(uint8_t key, const hid_keyboard_report_t *report) {
 /* Check if the current report matches a specific hotkey passed on */
 bool check_specific_hotkey(hotkey_combo_t keypress, const hid_keyboard_report_t *report) {
     // If masked modifiers are pressed, ignore
-    if (keypress.modifier & report->modifier)
+    if (keypress.modifier_mask & report->modifier)
         return false;
     /* We expect all modifiers specified to be detected in the report */
     if (keypress.modifier != (report->modifier & keypress.modifier))
