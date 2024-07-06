@@ -53,9 +53,9 @@
  * 
  * */
 
-// Mouse base resolution 
-// Mouse speed will change inversely with this value
-#define MOUSE_BASE_RESOLUTION 2000
+// Mouse base speed
+// We divide this with screen resolution to get speed factor
+#define MOUSE_BASE_SPEED 30720
 
 #define JUMP_THRESHOLD 0
 

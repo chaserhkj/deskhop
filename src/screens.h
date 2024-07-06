@@ -80,20 +80,20 @@ static inline bool bound_check(int* x, int* y, int dx, int dy, int output) {
 
 static inline int get_x_speed() {
     if (global_state.active_output == OUTPUT_A) {
-        return global_state.current_screens->width_A / MOUSE_BASE_RESOLUTION ;
+        return MOUSE_BASE_SPEED / global_state.current_screens->width_A;
     }
     if (global_state.active_output == OUTPUT_B) {
-        return global_state.current_screens->width_B / MOUSE_BASE_RESOLUTION ;
+        return MOUSE_BASE_SPEED / global_state.current_screens->width_B;
     }
     return 16;
 }
 
 static inline int get_y_speed() {
     if (global_state.active_output == OUTPUT_A) {
-        return global_state.current_screens->height_A / MOUSE_BASE_RESOLUTION ;
+        return MOUSE_BASE_SPEED / global_state.current_screens->height_A;
     }
     if (global_state.active_output == OUTPUT_B) {
-        return global_state.current_screens->height_B / MOUSE_BASE_RESOLUTION ;
+        return MOUSE_BASE_SPEED / global_state.current_screens->height_B;
     }
     return 16;
 }
