@@ -36,12 +36,22 @@ void output_toggle_hotkey_handler(device_t *state, hid_keyboard_report_t *report
 
 /* This key combo puts board A in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_A(device_t *state, hid_keyboard_report_t *report) {
+#if BOARD_ROLE == ROLE_A
     reset_usb_boot(1 << PICO_DEFAULT_LED_PIN, 0);
+#endif
+#if BOARD_ROLE == ROLE_B
+    send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
+#endif
 };
 
 /* This key combo puts board B in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_B(device_t *state, hid_keyboard_report_t *report) {
+#if BOARD_ROLE == ROLE_B
+    reset_usb_boot(1 << PICO_DEFAULT_LED_PIN, 0);
+#endif
+#if BOARD_ROLE == ROLE_A
     send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
+#endif
 };
 
 /* This key combo prevents mouse from switching outputs */
