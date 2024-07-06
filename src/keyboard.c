@@ -72,13 +72,6 @@ hotkey_combo_t hotkeys[] = {
     //  .acknowledge    = true,
     //  .action_handler = &wipe_config_hotkey_handler},
 
-    // /* Toggle screensaver function */
-    // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
-    //  .keys           = {HID_KEY_F12, HID_KEY_T},
-    //  .key_count      = 2,
-    //  .acknowledge    = true,
-    //  .action_handler = &screensaver_hotkey_handler},
-
     /* Record switch y coordinate  */
     // {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT,
     //  .keys           = {HID_KEY_F12, HID_KEY_G},

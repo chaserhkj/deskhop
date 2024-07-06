@@ -104,59 +104,6 @@ void save_config(device_t *state) {
     restore_interrupts(ints);
 }
 
-/* Have something fun and entertaining when idle. */
-void screensaver_task(device_t *state) {
-    const int mouse_move_delay = 5000;
-    screensaver_t *screensaver = &state->config.output[BOARD_ROLE].screensaver;
-
-    static mouse_report_t report = {.x = 0, .y = 0};
-    static int last_pointer_move = 0;
-
-    uint64_t current_time      = time_us_64();
-    uint64_t inactivity_period = current_time - state->last_activity[BOARD_ROLE];
-
-    /* "Randomly" chosen initial values */
-    static int dx = 20;
-    static int dy = 25;
-
-    /* If we're not enabled, nothing to do here. */
-    if (!screensaver->enabled)
-        return;
-
-    /* System is still not idle for long enough to activate or we've been running for too long */
-    if (inactivity_period < screensaver->idle_time_us)
-        return;
-
-    /* We exceeded the maximum permitted screensaver runtime */
-    if (screensaver->max_time_us
-        && inactivity_period > (screensaver->max_time_us + screensaver->idle_time_us))
-        return;
-
-    /* If we're not the selected output and that is required, nothing to do here. */
-    if (screensaver->only_if_inactive && CURRENT_BOARD_IS_ACTIVE_OUTPUT)
-        return;
-
-    /* We're active! Now check if it's time to move the cursor yet. */
-    if ((time_us_32()) - last_pointer_move < mouse_move_delay)
-        return;
-
-    /* Check if we are bouncing off the walls and reverse direction in that case. */
-    if (report.x + dx < MIN_SCREEN_COORD || report.x + dx > MAX_SCREEN_COORD)
-        dx = -dx;
-
-    if (report.y + dy < MIN_SCREEN_COORD || report.y + dy > MAX_SCREEN_COORD)
-        dy = -dy;
-
-    report.x += dx;
-    report.y += dy;
-
-    /* Move mouse pointer */
-    queue_mouse_report(&report, state);
-
-    /* Update timer of the last pointer move */
-    last_pointer_move = time_us_32();
-}
-
 /* ================================================== *
  * Debug functions
  * ================================================== */

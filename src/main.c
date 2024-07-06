@@ -66,9 +66,6 @@ void core1_main() {
 
         // Check if LED needs blinking
         led_blinking_task(device);
-
-        // Mouse screensaver task
-        screensaver_task(device);
     }
 }
 

@@ -138,11 +138,6 @@ void wipe_config_hotkey_handler(device_t *state, hid_keyboard_report_t *report) 
     send_value(ENABLE, WIPE_CONFIG_MSG);
 }
 
-void screensaver_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
-    state->config.output[BOARD_ROLE].screensaver.enabled ^= 1;
-    send_value(state->config.output[BOARD_ROLE].screensaver.enabled, SCREENSAVER_MSG);
-}
-
 /* When pressed, toggles the current mouse zoom mode state */
 void mouse_zoom_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
     state->mouse_zoom ^= 1;
@@ -223,10 +218,6 @@ void handle_flash_led_msg(uart_packet_t *packet, device_t *state) {
 void handle_wipe_config_msg(uart_packet_t *packet, device_t *state) {
     wipe_config();
     load_config(state);
-}
-
-void handle_screensaver_msg(uart_packet_t *packet, device_t *state) {
-    state->config.output[BOARD_ROLE].screensaver.enabled = packet->data[0];
 }
 
 void handle_output_config_msg(uart_packet_t *packet, device_t *state) {

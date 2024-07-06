@@ -104,14 +104,13 @@ enum packet_type_e {
     SWITCH_LOCK_MSG      = 7,
     SYNC_BORDERS_MSG     = 8,
     FLASH_LED_MSG        = 9,
-    SCREENSAVER_MSG      = 10,
-    WIPE_CONFIG_MSG      = 11,
-    SWAP_OUTPUTS_MSG     = 12,
-    HEARTBEAT_MSG        = 13,
-    OUTPUT_CONFIG_MSG    = 14,
-    CONSUMER_CONTROL_MSG = 15,
+    WIPE_CONFIG_MSG      = 10,
+    SWAP_OUTPUTS_MSG     = 11,
+    HEARTBEAT_MSG        = 12,
+    OUTPUT_CONFIG_MSG    = 13,
+    CONSUMER_CONTROL_MSG = 14,
 #ifdef DH_DEBUG
-    DEBUG_MSG            = 16,
+    DEBUG_MSG            = 15,
 #endif
 };
 
@@ -184,14 +183,6 @@ typedef struct {
                 // height
 } border_size_t;
 
-/* Define screensaver parameters */
-typedef struct {
-    uint8_t enabled;
-    uint8_t only_if_inactive;
-    uint64_t idle_time_us;
-    uint64_t max_time_us;
-} screensaver_t;
-
 // TODO: since we have screens.h to handle screen size and position
 // we should get rid of the screen primitives here to merge screens.h into here
 /* Define output parameters */
@@ -204,7 +195,6 @@ typedef struct {
     border_size_t border;      // Screen border size/offset to keep cursor at same height when switching
     enum os_type_e os;         // Operating system on this output
     enum screen_pos_e pos;     // Screen position on this output
-    screensaver_t screensaver; // Screensaver parameters for this output
 } output_t;
 
 /* Data structure defining how configuration is stored */
@@ -213,7 +203,6 @@ typedef struct {
     uint32_t version;
     uint8_t force_mouse_boot_mode;
     output_t output[NUM_SCREENS];
-    uint8_t screensaver_enabled;
     // Keep checksum at the end of the struct
     uint32_t checksum;
 } config_t;
@@ -359,9 +348,6 @@ void load_config(device_t *);
 void save_config(device_t *);
 void wipe_config(void);
 
-/*********  Misc  **********/
-void screensaver_task(device_t *);
-
 /*********  Handlers  **********/
 void output_toggle_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void screen_border_hotkey_handler(device_t *, hid_keyboard_report_t *);
@@ -373,7 +359,6 @@ void switchlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void screenlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void output_config_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void wipe_config_hotkey_handler(device_t *, hid_keyboard_report_t *);
-void screensaver_hotkey_handler(device_t *, hid_keyboard_report_t *);
 
 void handle_keyboard_uart_msg(uart_packet_t *, device_t *);
 void handle_mouse_abs_uart_msg(uart_packet_t *, device_t *);
@@ -386,7 +371,6 @@ void handle_sync_borders_msg(uart_packet_t *, device_t *);
 void handle_flash_led_msg(uart_packet_t *, device_t *);
 void handle_fw_upgrade_msg(uart_packet_t *, device_t *);
 void handle_wipe_config_msg(uart_packet_t *, device_t *);
-void handle_screensaver_msg(uart_packet_t *, device_t *);
 void handle_consumer_control_msg(uart_packet_t *, device_t *);
 
 #ifdef DH_DEBUG
