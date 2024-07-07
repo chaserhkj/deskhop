@@ -162,7 +162,6 @@ mouse_report_t create_mouse_report(device_t *state, mouse_values_t *values) {
         .mode    = ABSOLUTE,
     };
 
-    /* Workaround for Windows multiple desktops */
     if (state->relative_mouse) {
         mouse_report.x = SCREEN_MIDPOINT + values->move_x;
         mouse_report.y = SCREEN_MIDPOINT + values->move_y;

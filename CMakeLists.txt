@@ -73,10 +73,16 @@ set(COMMON_LINK_LIBRARIES
 # Pico A - Keyboard (board_role = 0) 
 #      B - Mouse    (board_role = 1)
 
-set(binaries board_A board_B)
+# Common settings
+set(binaries board_A board_B board_B_boot3_nohdr)
 
-foreach(board_role RANGE 0 1)
-  list (GET binaries ${board_role} binary)
+foreach(idx RANGE 0 2)
+  list (GET binaries ${idx} binary)
+  if(idx EQUAL 0)
+    set(board_role 0)
+  else()
+    set(board_role 1)
+  endif()
 
   add_executable(${binary})
 
@@ -84,7 +90,6 @@ foreach(board_role RANGE 0 1)
   target_compile_definitions(${binary} PRIVATE BOARD_ROLE=${board_role} PIO_USB_USE_TINYUSB=1 PIO_USB_DP_PIN_DEFAULT=14)
 
   target_include_directories(${binary} PUBLIC ${COMMON_INCLUDES})
-  target_link_libraries(${binary} PUBLIC ${COMMON_LINK_LIBRARIES})
 
   pico_enable_stdio_usb(${binary} 0)
   pico_add_extra_outputs(${binary})
@@ -94,6 +99,62 @@ foreach(board_role RANGE 0 1)
     --print-memory-usage
   )
 
-  pico_set_linker_script(${binary} ${CMAKE_SOURCE_DIR}/memory_map.ld)
 
 endforeach()
+
+# Binary of A and B firmware with stock bootloader
+target_link_libraries(board_A PUBLIC ${COMMON_LINK_LIBRARIES})
+pico_set_linker_script(board_A ${CMAKE_SOURCE_DIR}/memory_map.ld)
+target_link_libraries(board_B PUBLIC ${COMMON_LINK_LIBRARIES})
+pico_set_linker_script(board_B ${CMAKE_SOURCE_DIR}/memory_map.ld)
+
+add_subdirectory("rp2040-serial-bootloader")
+
+# Assemble UART bootloader into elf object library
+# Providing .boot3 sections
+set(bt_bin_dir $<TARGET_FILE_DIR:bootloader>)
+add_library(boot3 OBJECT ${CMAKE_CURRENT_LIST_DIR}/boot3.s)
+target_include_directories(boot3 PRIVATE ${bt_bin_dir})
+add_dependencies(boot3 bootloader)
+
+# Link .boot3 sections using boot3 memory map
+# The CRC field in result is not populated yet
+target_link_libraries(board_B_boot3_nohdr PUBLIC ${COMMON_LINK_LIBRARIES} boot3)
+pico_set_linker_script(board_B_boot3_nohdr ${CMAKE_SOURCE_DIR}/memory_map_boot3.ld)
+
+# Build app image for B
+# App image only contains the main app after boot3 section
+set(app_img ${CMAKE_CURRENT_BINARY_DIR}/board_B_app_img.bin)
+add_custom_target(board_B_app_img ALL DEPENDS ${app_img})
+add_custom_command(OUTPUT ${app_img}
+  COMMAND ${CMAKE_OBJCOPY} -R .boot3 -R .img_offset -R .img_size -R .img_crc 
+  -Obinary $<TARGET_FILE:board_B_boot3_nohdr> ${app_img}
+)
+
+find_package (Python3 REQUIRED COMPONENTS Interpreter)
+# Calculate CRC checksum for app image
+set(crc_le ${CMAKE_CURRENT_BINARY_DIR}/board_B_app_img.crc.le.bin)
+set(crc_script ${CMAKE_CURRENT_LIST_DIR}/calc_crc.py)
+add_custom_command(OUTPUT ${crc_le}
+  DEPENDS ${app_img} ${crc_script}
+  COMMAND ${Python3_EXECUTABLE} ${crc_script} ${app_img} ${crc_le}
+)
+
+set(boot3_target ${CMAKE_CURRENT_BINARY_DIR}/board_B_boot3)
+add_custom_target(board_B_boot3 ALL DEPENDS ${boot3_target}.elf)
+add_custom_command(OUTPUT ${boot3_target}.elf
+  DEPENDS board_B_boot3_nohdr ${crc_le}
+  COMMAND ${CMAKE_OBJCOPY} --update-section .img_crc=${crc_le}
+    $<TARGET_FILE:board_B_boot3_nohdr> ${boot3_target}.elf
+)
+
+add_custom_command(TARGET board_B_boot3 POST_BUILD
+  BYPRODUCTS ${boot3_target}.bin
+  COMMAND ${CMAKE_OBJCOPY} -Obinary ${boot3_target}.elf ${boot3_target}.bin
+)
+
+add_custom_command(TARGET board_B_boot3 POST_BUILD
+  BYPRODUCTS ${boot3_target}.uf2
+  COMMAND ELF2UF2 ${boot3_target}.elf ${boot3_target}.uf2
+)
+
