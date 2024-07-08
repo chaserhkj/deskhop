@@ -12,9 +12,9 @@ cmd="program $bin_file 0x10000000 verify"
 
 if [[ $1 == b ]]; then
     # Verify app image for checksum
-    cmd="$cmd; init; halt; flash verify_image build/board_B_app_img.bin 0x10004000; exit"
+    cmd="$cmd; init; halt; flash verify_image build/board_B_app_img.bin 0x10004000; reset; exit"
 else
-    cmd="$cmd; exit"
+    cmd="$cmd; reset; exit"
 fi
 
 echo $cmd
