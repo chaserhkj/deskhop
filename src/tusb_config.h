@@ -110,7 +110,7 @@ extern int dh_debug_printf(const char *__restrict __format, ...);
 #define CFG_TUD_VENDOR 0
 
 // HID buffer size Should be sufficient to hold ID (if any) + Data
-#define CFG_TUD_HID_EP_BUFSIZE 32
+#define CFG_TUD_HID_EP_BUFSIZE 64
 
 //--------------------------------------------------------------------
 // HOST CONFIGURATION
