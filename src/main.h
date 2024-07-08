@@ -381,5 +381,14 @@ void host_handle_set_screens_info_msg(uint8_t const*, uint16_t);
 
 void switch_output(device_t *, uint8_t);
 
+// UART OTG upgrade for board_B
+#if BOARD_ROLE == PICO_B
+
+#define BOOTLOADER_ENTRY_MAGIC 0xb105f00d
+#define REBOOT_DELAY_MICRO_S 8192
+void reboot_to_serial_bootloader();
+
+#endif
+
 /*********  Global variables (don't judge)  **********/
 extern device_t global_state;

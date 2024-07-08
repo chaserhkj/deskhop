@@ -72,6 +72,11 @@ void pio_usb_host_config(void) {
  * ================================================== */
 
 void initial_setup(device_t *state) {
+#if BOARD_ROLE == PICO_B
+    // Unset bootloader entry flag at boot up
+    watchdog_hw->scratch[5] = 0;
+    watchdog_hw->scratch[6] = 0;
+#endif
     /* PIO USB requires a clock multiple of 12 MHz, setting to 120 MHz */
     set_sys_clock_khz(120000, true);
 
