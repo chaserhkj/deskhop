@@ -118,9 +118,12 @@ target_compile_definitions(bootloader PRIVATE
 
 # Assemble UART bootloader into elf object library
 # Providing .boot3 sections
-set(bt_bin_dir $<TARGET_FILE_DIR:bootloader>)
+get_property(bt_bin_dir TARGET bootloader PROPERTY BINARY_DIR)
 add_library(boot3 OBJECT ${CMAKE_CURRENT_LIST_DIR}/boot3.s)
 target_include_directories(boot3 PRIVATE ${bt_bin_dir})
+set_property(SOURCE ${CMAKE_CURRENT_LIST_DIR}/boot3.s
+  PROPERTY OBJECT_DEPENDS ${bt_bin_dir}/bootloader.bin
+  )
 add_dependencies(boot3 bootloader)
 
 # Link .boot3 sections using boot3 memory map
