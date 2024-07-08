@@ -109,6 +109,11 @@ target_link_libraries(board_B PUBLIC ${COMMON_LINK_LIBRARIES})
 pico_set_linker_script(board_B ${CMAKE_SOURCE_DIR}/memory_map.ld)
 
 add_subdirectory("rp2040-serial-bootloader")
+target_compile_definitions(bootloader PRIVATE
+  BOOTLOADER_ENTRY_PIN=0
+  UART_TX_PIN=16
+  UART_RX_PIN=17
+  )
 
 # Assemble UART bootloader into elf object library
 # Providing .boot3 sections
