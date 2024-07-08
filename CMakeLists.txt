@@ -133,6 +133,7 @@ pico_set_linker_script(board_B_boot3_nohdr ${CMAKE_SOURCE_DIR}/memory_map_boot3.
 set(app_img ${CMAKE_CURRENT_BINARY_DIR}/board_B_app_img.bin)
 add_custom_target(board_B_app_img ALL DEPENDS ${app_img})
 add_custom_command(OUTPUT ${app_img}
+  DEPENDS board_B_boot3_nohdr
   COMMAND ${CMAKE_OBJCOPY} -R .boot3 -R .img_offset -R .img_size -R .img_crc 
   -Obinary $<TARGET_FILE:board_B_boot3_nohdr> ${app_img}
 )
