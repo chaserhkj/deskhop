@@ -385,7 +385,6 @@ void switch_output(device_t *, uint8_t);
 #if BOARD_ROLE == PICO_B
 
 #define BOOTLOADER_ENTRY_MAGIC 0xb105f00d
-#define REBOOT_DELAY_MICRO_S 8192
 void reboot_to_serial_bootloader();
 
 #endif
