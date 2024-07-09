@@ -94,7 +94,7 @@ void screenlock_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
 
         if (BOARD_ROLE == out) {
             queue_kbd_report(&lock_report, state);
-            release_all_keys(state);
+            release_all_keys(state, true, false);
         } else {
             send_packet((uint8_t *)&lock_report, KEYBOARD_REPORT_MSG, KBD_REPORT_LENGTH);
             send_packet((uint8_t *)&release_keys, KEYBOARD_REPORT_MSG, KBD_REPORT_LENGTH);
@@ -130,7 +130,7 @@ void handle_mouse_abs_uart_msg(uart_packet_t *packet, device_t *state) {
 void handle_output_select_msg(uart_packet_t *packet, device_t *state) {
     state->active_output = packet->data[0];
     if (state->tud_connected)
-        release_all_keys(state);
+        release_all_keys(state, true, false);
 
     restore_leds(state);
 }
@@ -324,5 +324,5 @@ void switch_output(device_t *state, uint8_t new_output) {
 
     /* If we were holding a key down and drag the mouse to another screen, the key gets stuck.
        Changing outputs = no more keypresses on the previous system. */
-    release_all_keys(state);
+    release_all_keys(state, true, false);
 }

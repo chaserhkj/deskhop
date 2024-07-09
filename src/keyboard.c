@@ -27,6 +27,7 @@ hotkey_combo_t hotkeys[] = {
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTSHIFT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = false,
      .pass_to_os     = false,
      .action_handler = &output_toggle_hotkey_handler},
 
@@ -35,6 +36,7 @@ hotkey_combo_t hotkeys[] = {
      .modifier_mask  = 0,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = false,
      .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &mouse_zoom_hotkey_handler},
@@ -44,6 +46,7 @@ hotkey_combo_t hotkeys[] = {
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_LEFTSHIFT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = false,
      .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &switchlock_hotkey_handler},
@@ -53,24 +56,27 @@ hotkey_combo_t hotkeys[] = {
      .modifier_mask  = 0,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = false,
      .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &screenlock_hotkey_handler},
 
-    /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
+    /* firmware upgrade mode for board A (kbd) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_LEFTCTRL,
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = true,
      .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_A},
 
-    /* Hold down left shift + right shift + F12 + B ==> firmware upgrade mode for board B (mouse) */
+    /* firmware upgrade mode for board B (mouse) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTCTRL,
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
+     .release_keys  = true,
      .pass_to_os     = false,
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_B}};
@@ -156,9 +162,15 @@ void queue_kbd_report(hid_keyboard_report_t *report, device_t *state) {
     queue_try_add(&state->kbd_queue, report);
 }
 
-void release_all_keys(device_t *state) {
+void release_all_keys(device_t *state, bool local, bool immediate) {
     static hid_keyboard_report_t no_keys_pressed_report = {0, 0, {0}};
-    queue_try_add(&state->kbd_queue, &no_keys_pressed_report);
+    if (local || CURRENT_BOARD_IS_ACTIVE_OUTPUT) {
+        if (immediate && state->tud_connected && !tud_suspended())
+            tud_hid_keyboard_report(REPORT_ID_KEYBOARD, no_keys_pressed_report.modifier, no_keys_pressed_report.keycode);
+        else
+            queue_try_add(&state->kbd_queue, &no_keys_pressed_report);
+    } else
+        send_packet((uint8_t *)&no_keys_pressed_report, KEYBOARD_REPORT_MSG, KBD_REPORT_LENGTH);
 }
 
 /* If keys need to go locally, queue packet to kbd queue, else send them through UART */
@@ -206,6 +218,9 @@ void process_keyboard_report(uint8_t *raw_report, int length, device_t *state) {
         /* Provide visual feedback we received the action */
         if (hotkey->acknowledge)
             blink_led(state);
+        
+        if (hotkey->release_keys)
+            release_all_keys(state, false, true);
 
         /* Execute the corresponding handler */
         hotkey->action_handler(state, keyboard_report);
