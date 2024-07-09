@@ -48,7 +48,8 @@ void fw_upgrade_hotkey_handler_A(device_t *state, hid_keyboard_report_t *report)
 void fw_upgrade_hotkey_handler_B(device_t *state, hid_keyboard_report_t *report) {
 #if BOARD_ROLE == PICO_B
     send_value(ENABLE, START_FORWARDER_MSG);
-    reboot_to_serial_bootloader();
+    // We don't do the real reboot here, but wait for A to confirm forwarder is up
+    // by instructing B to reboot
 #endif
 #if BOARD_ROLE == PICO_A
     if (global_state.forwarder_state == FWD_DISABLED)
@@ -61,6 +62,8 @@ void handle_start_forwarder_msg(uart_packet_t* packet, device_t* state) {
 #if BOARD_ROLE == PICO_A
     if (global_state.forwarder_state == FWD_DISABLED)
         global_state.forwarder_state = FWD_IDLE;
+    // Trigger the real reboot for B
+    send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
 #endif
 }
 
