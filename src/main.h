@@ -107,16 +107,42 @@ enum packet_type_e {
     SWAP_OUTPUTS_MSG     = 10,
     HEARTBEAT_MSG        = 11,
     CONSUMER_CONTROL_MSG = 12,
-    SCREENS_INFO_MSG   = 13,
+    SCREENS_INFO_MSG     = 13,
+    START_FORWARDER_MSG  = 14,
 #ifdef DH_DEBUG
-    DEBUG_MSG            = 14,
+    DEBUG_MSG            = 15,
 #endif
 };
 
 #if BOARD_ROLE == PICO_A
+
+#define HOST_MSG_PAYLOAD_LENGTH (CFG_TUD_HID_EP_BUFSIZE - 1)
 // Host message types
 enum host_msg_type_e {
     SET_SCREENS_INFO_HOST_MSG = 1,
+    // For handling forwarder
+    FORWARDER_WRITE_HOST_MSG = 2, // Write out buffer
+    FORWARDER_SEND_HOST_MSG = 3, // Verify and send out buffer
+    FORWARDER_READ_HOST_MSG = 4, // Read in buffer
+    FORWARDER_STOP_HOST_MSG = 5, // Stop forwarder
+};
+
+// Host message response types
+enum host_msg_resp_type_e {
+    // Ok 
+    OK_HOST_MSG_RESP = 1,
+    // Data read
+    DATA_HOST_MSG_RESP = 2,
+    // Out of bounds
+    OOB_HOST_MSG_RESP = 3,
+    // Invalid state
+    INVALID_STATE_HOST_MSG_RESP = 4,
+    // Checksum mismatch
+    WRONG_CHECKSUM_HOST_MSG_RESP = 5,
+    // Malformed message
+    MALFORMED_HOST_MSG_RESP = 6,
+    // Buffer overrun occurred, returning obtained data
+    OVERRAN_HOST_MSG_RESP = 7,
 };
 #endif
 
@@ -252,6 +278,21 @@ typedef struct TU_ATTR_PACKED {
 
 typedef enum { IDLE, READING_PACKET, PROCESSING_PACKET } receiver_state_t;
 
+#if BOARD_ROLE == PICO_A
+
+#define FORWARDER_MAX_NARG 5
+#define FORWARDER_MAX_DATA_LEN 1024
+#define FORWARDER_BUF_SIZE ((sizeof(uint32_t) * (1 + FORWARDER_MAX_NARG)) + FORWARDER_MAX_DATA_LEN) + 1
+
+typedef enum {
+    FWD_DISABLED,
+    FWD_IDLE,
+    FWD_SEND,
+    FWD_RECEIVING,
+    FWD_OVERRAN,
+} forwarder_state_t;
+#endif
+
 typedef struct {
     uint8_t kbd_dev_addr; // Address of the keyboard device
     uint8_t kbd_instance; // Keyboard instance (d'uh - isn't this a useless comment)
@@ -259,6 +300,14 @@ typedef struct {
     uint8_t keyboard_leds[NUM_SCREENS];  // State of keyboard LEDs (index 0 = A, index 1 = B)
     uint64_t last_activity[NUM_SCREENS]; // Timestamp of the last input activity (-||-)
     receiver_state_t receiver_state;     // Storing the state for the simple receiver state machine
+#if BOARD_ROLE == PICO_A
+    forwarder_state_t forwarder_state;       // State for UART forwarder
+    uint8_t forwarder_out_data[FORWARDER_BUF_SIZE]; // Buffer for sending out forwarder data
+    uint16_t forwarder_out_data_size;           // data length in out buffer
+    uint8_t forwarder_in_data[FORWARDER_BUF_SIZE]; // Ring buffer for reading in forwarder data
+    uint16_t forwarder_in_data_written; // pointer for writing into in buffer
+    uint16_t forwarder_in_data_read;    // pointer for (usb HID) to read from in buffer
+#endif
     uint64_t core1_last_loop_pass;       // Timestamp of last core1 loop execution
     uint8_t active_output;               // Currently selected output (0 = A, 1 = B)
 
@@ -327,7 +376,8 @@ void send_value(const uint8_t, enum packet_type_e);
 #if BOARD_ROLE == PICO_A
 // Host side messaging and control through raw hid
 void process_host_message(uint8_t const*, uint16_t);
-void send_host_message(const uint8_t *, enum host_msg_type_e, int);
+void send_host_message_resp(const uint8_t *, enum host_msg_resp_type_e, int);
+void host_message_resp_status(enum host_msg_resp_type_e);
 #endif
 
 /*********  LEDs  **********/
@@ -367,6 +417,7 @@ void handle_fw_upgrade_msg(uart_packet_t *, device_t *);
 void handle_wipe_config_msg(uart_packet_t *, device_t *);
 void handle_consumer_control_msg(uart_packet_t *, device_t *);
 void handle_screens_info_msg(uart_packet_t *, device_t *);
+void handle_start_forwarder_msg(uart_packet_t *, device_t *);
 
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A
@@ -377,11 +428,23 @@ void handle_debug_msg(uart_packet_t *, device_t *);
 #if BOARD_ROLE == PICO_A
 // Host msg handlers
 void host_handle_set_screens_info_msg(uint8_t const*, uint16_t);
+
+void host_handle_forwarder_write(uint8_t const*, uint16_t);
+void host_handle_forwarder_send(uint8_t const*, uint16_t);
+void host_handle_forwarder_read(uint8_t const*, uint16_t);
+void host_handle_forwarder_stop(uint8_t const*, uint16_t);
+
 #endif
 
 void switch_output(device_t *, uint8_t);
 
 // UART OTG upgrade for board_B
+#if BOARD_ROLE == PICO_A
+
+void forwarder_task(device_t *);
+
+#endif
+
 #if BOARD_ROLE == PICO_B
 
 #define BOOTLOADER_ENTRY_MAGIC 0xb105f00d

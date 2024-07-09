@@ -61,8 +61,18 @@ void core1_main() {
         if (tuh_inited())
             tuh_task();
 
+#if BOARD_ROLE == PICO_A
+        if (device->forwarder_state == FWD_DISABLED)
         // Receives data over serial from the other board
+            receive_char(&in_packet, device);
+        else
+        // Forward data between serial and host
+            forwarder_task(device);
+#endif
+#if BOARD_ROLE == PICO_B
         receive_char(&in_packet, device);
+#endif
+
 
         // Check if LED needs blinking
         led_blinking_task(device);

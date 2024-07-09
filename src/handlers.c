@@ -47,12 +47,22 @@ void fw_upgrade_hotkey_handler_A(device_t *state, hid_keyboard_report_t *report)
 /* This key combo puts board B in firmware upgrade mode */
 void fw_upgrade_hotkey_handler_B(device_t *state, hid_keyboard_report_t *report) {
 #if BOARD_ROLE == PICO_B
+    send_value(ENABLE, START_FORWARDER_MSG);
     reboot_to_serial_bootloader();
 #endif
 #if BOARD_ROLE == PICO_A
+    if (global_state.forwarder_state == FWD_DISABLED)
+        global_state.forwarder_state = FWD_IDLE;
     send_value(ENABLE, FIRMWARE_UPGRADE_MSG);
 #endif
 };
+
+void handle_start_forwarder_msg(uart_packet_t* packet, device_t* state) {
+#if BOARD_ROLE == PICO_A
+    if (global_state.forwarder_state == FWD_DISABLED)
+        global_state.forwarder_state = FWD_IDLE;
+#endif
+}
 
 /* This key combo prevents mouse from switching outputs */
 void switchlock_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
@@ -193,10 +203,113 @@ void handle_debug_msg(uart_packet_t * packet, device_t * state) {
 // handling set screens info command from host
 void host_handle_set_screens_info_msg(uint8_t const* data, uint16_t length){
     uint8_t layout_index = data[0];
-    set_screens_info(layout_index, true);
+    if(set_screens_info(layout_index, true))
+        host_message_resp_status(OK_HOST_MSG_RESP);
+    else
+        host_message_resp_status(OOB_HOST_MSG_RESP);
 
     restore_leds(&global_state);
 }
+
+// write to forwarder out buffer
+void host_handle_forwarder_write(uint8_t const* data, uint16_t length) {
+    // Cannot write if forwarder is disabled or sending data currently
+    if (global_state.forwarder_state == FWD_DISABLED ||
+        global_state.forwarder_state == FWD_SEND) {
+        host_message_resp_status(INVALID_STATE_HOST_MSG_RESP);
+        return;
+    }
+    if (length < 2) {
+        host_message_resp_status(MALFORMED_HOST_MSG_RESP);
+        return;
+    }
+    // First two bytes denote the write offset
+    uint16_t offset = *((uint16_t *)data);
+    // Special value: 0xFFFF -> Reset buffer and write from start
+    if (offset == 0xFFFF) {
+        global_state.forwarder_out_data_size = 0;
+        offset = 0;
+    }
+    uint16_t data_length = length - 2;
+    uint16_t new_size = offset + data_length;
+    new_size = new_size > global_state.forwarder_out_data_size ?
+        new_size : global_state.forwarder_out_data_size;
+
+    if (new_size > FORWARDER_BUF_SIZE) {
+        host_message_resp_status(OOB_HOST_MSG_RESP);
+        return;
+    }
+    memcpy(global_state.forwarder_out_data+offset, data+2, data_length);
+    global_state.forwarder_out_data_size = new_size;
+    host_message_resp_status(OK_HOST_MSG_RESP);
+}
+
+// verify out buffer and send out message
+void host_handle_forwarder_send(uint8_t const* data, uint16_t length) {
+    // Cannot send if forwarder is disabled or sending data currently
+    if (global_state.forwarder_state == FWD_DISABLED ||
+        global_state.forwarder_state == FWD_SEND) {
+        host_message_resp_status(INVALID_STATE_HOST_MSG_RESP);
+        return;
+    }
+    if (length < 1)  {
+        host_message_resp_status(MALFORMED_HOST_MSG_RESP);
+        return;
+    }
+    // First byte is checksum
+    uint8_t incoming_chksum = *data;
+    uint8_t in_memory_chksum = calc_checksum(global_state.forwarder_out_data, global_state.forwarder_out_data_size);
+    if (incoming_chksum != in_memory_chksum) {
+        host_message_resp_status(WRONG_CHECKSUM_HOST_MSG_RESP);
+        return;
+    }
+    
+    global_state.forwarder_state = FWD_SEND;
+    host_message_resp_status(OK_HOST_MSG_RESP);
+}
+
+// Read in buffer
+void host_handle_forwarder_read(uint8_t const* data, uint16_t length) {
+    // Cannot read if forwarder is disabled
+    if (global_state.forwarder_state == FWD_DISABLED) {
+        host_message_resp_status(INVALID_STATE_HOST_MSG_RESP);
+        return;
+    }
+    // First byte is bytes to read
+    uint8_t read_length = *data;
+    if (read_length > HOST_MSG_PAYLOAD_LENGTH) {
+        host_message_resp_status(OOB_HOST_MSG_RESP);
+        return;
+    }
+    uint8_t read_buf[HOST_MSG_PAYLOAD_LENGTH];
+    int byte_read = 0;
+    for (; byte_read < read_length;) {
+        read_buf[byte_read] =
+            global_state.forwarder_in_data[global_state.forwarder_in_data_read];
+        byte_read++ ;
+        global_state.forwarder_in_data_read
+            = (global_state.forwarder_in_data_read+1)%FORWARDER_BUF_SIZE;
+        if (global_state.forwarder_in_data_read ==
+            global_state.forwarder_in_data_written) {
+            // Buffer underrun, we just return what we have
+            break;
+        }
+    }
+    // If overrun happened, we report it and reset the flag
+    // since we have consumed some data
+    if (global_state.forwarder_state == FWD_OVERRAN) {
+        global_state.forwarder_state = FWD_RECEIVING;
+        send_host_message_resp(read_buf, OVERRAN_HOST_MSG_RESP, byte_read);
+    } else {
+        send_host_message_resp(read_buf, DATA_HOST_MSG_RESP, byte_read);
+    }
+
+}
+
+void host_handle_forwarder_stop(uint8_t const* data, uint16_t length) {
+    global_state.forwarder_state = FWD_DISABLED;
+}
+
 #endif
 
 /**==================================================== *

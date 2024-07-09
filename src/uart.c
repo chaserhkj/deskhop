@@ -56,6 +56,7 @@ const uart_handler_t uart_handler[] = {
     {.type = WIPE_CONFIG_MSG, .handler = handle_wipe_config_msg},
     {.type = CONSUMER_CONTROL_MSG, .handler = handle_consumer_control_msg},    
     {.type = SCREENS_INFO_MSG, .handler = handle_consumer_control_msg},    
+    {.type = START_FORWARDER_MSG, .handler = handle_start_forwarder_msg},
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A
     {.type = DEBUG_MSG, .handler = handle_debug_msg},

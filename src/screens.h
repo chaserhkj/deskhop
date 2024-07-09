@@ -7,7 +7,7 @@
 
 bool bound_check_simple(int* x, int* y, int dx, int dy, int output);
 
-void set_screens_info(uint8_t, bool);
+bool set_screens_info(uint8_t, bool);
 
 extern const screens_info_t screens_info_array[];
 
