@@ -238,7 +238,6 @@ typedef struct {
     uint8_t keys[6];                 // Which keys need to be pressed
     uint8_t key_count;               // How many keys are pressed
     action_handler_t action_handler; // What to execute when the key combination is detected
-    bool release_keys;               // True if we are to issue a release event to the OS prior to processing hotkey
     bool pass_to_os;                 // True if we are to pass the key to the OS too
     bool acknowledge;                // True if we are to notify the user about registering keypress
 } hotkey_combo_t;
@@ -351,7 +350,7 @@ void core1_main(void);
 bool check_specific_hotkey(hotkey_combo_t, const hid_keyboard_report_t *);
 void process_keyboard_report(uint8_t *, int, device_t *);
 void process_consumer_report(uint8_t *, int, device_t *);
-void release_all_keys(device_t *, bool, bool);
+void release_all_keys(device_t *);
 void queue_kbd_report(hid_keyboard_report_t *, device_t *);
 void process_kbd_queue_task(device_t *);
 void send_key(hid_keyboard_report_t *, device_t *);
