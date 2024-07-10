@@ -109,8 +109,9 @@ enum packet_type_e {
     CONSUMER_CONTROL_MSG = 12,
     SCREENS_INFO_MSG     = 13,
     START_FORWARDER_MSG  = 14,
+    RELATIVE_MOUSE_MSG   = 15,
 #ifdef DH_DEBUG
-    DEBUG_MSG            = 15,
+    DEBUG_MSG            = 16,
 #endif
 };
 
@@ -406,6 +407,7 @@ void mouse_zoom_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void all_keys_released_handler(device_t *);
 void switchlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
 void screenlock_hotkey_handler(device_t *, hid_keyboard_report_t *);
+void toggle_relative_mouse_handler(device_t *, hid_keyboard_report_t *);
 
 void handle_keyboard_uart_msg(uart_packet_t *, device_t *);
 void handle_mouse_abs_uart_msg(uart_packet_t *, device_t *);
@@ -419,6 +421,7 @@ void handle_wipe_config_msg(uart_packet_t *, device_t *);
 void handle_consumer_control_msg(uart_packet_t *, device_t *);
 void handle_screens_info_msg(uart_packet_t *, device_t *);
 void handle_start_forwarder_msg(uart_packet_t *, device_t *);
+void handle_relative_mouse_msg(uart_packet_t *, device_t *);
 
 #ifdef DH_DEBUG
 #if BOARD_ROLE == PICO_A

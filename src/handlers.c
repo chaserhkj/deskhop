@@ -113,6 +113,12 @@ void mouse_zoom_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
     send_value(state->mouse_zoom, MOUSE_ZOOM_MSG);
 };
 
+void toggle_relative_mouse_handler(device_t *state, hid_keyboard_report_t *report) {
+    state->relative_mouse ^= 1;
+    send_value(state->relative_mouse, RELATIVE_MOUSE_MSG);
+}
+
+
 /**==================================================== *
  * ==========  UART Message Handling Routines  ======== *
  * ==================================================== */
@@ -186,6 +192,12 @@ void handle_consumer_control_msg(uart_packet_t *packet, device_t *state) {
 void handle_screens_info_msg(uart_packet_t *packet, device_t *state) {
     uint8_t layout_index = packet->data[0];
     set_screens_info(layout_index, false);
+
+    restore_leds(state);
+}
+
+void handle_relative_mouse_msg(uart_packet_t *packet, device_t *state) {
+    state->relative_mouse = packet->data[0];
 
     restore_leds(state);
 }

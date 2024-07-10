@@ -24,13 +24,14 @@
 hotkey_combo_t hotkeys[] = {
     /* Main keyboard switching hotkey */
     {.modifier       = 0,
-     .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTSHIFT,
+     .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTSHIFT |
+                        KEYBOARD_MODIFIER_LEFTGUI,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
      .action_handler = &output_toggle_hotkey_handler},
 
-    /* Pressing right CTRL + right SHIFT + Backspace toggles the slow mouse mode */
+    /* slow mouse mode */
     {.modifier       = KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_LEFTCTRL,
      .modifier_mask  = 0,
      .keys           = {HOTKEY_TOGGLE},
@@ -57,7 +58,7 @@ hotkey_combo_t hotkeys[] = {
      .acknowledge    = true,
      .action_handler = &screenlock_hotkey_handler},
 
-    /* Hold down left shift + right shift + F12 + A ==> firmware upgrade mode for board A (kbd) */
+    /* firmware upgrade mode for board A (kbd) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_LEFTCTRL,
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
@@ -66,14 +67,24 @@ hotkey_combo_t hotkeys[] = {
      .acknowledge    = true,
      .action_handler = &fw_upgrade_hotkey_handler_A},
 
-    /* Hold down left shift + right shift + F12 + B ==> firmware upgrade mode for board B (mouse) */
+    /* firmware upgrade mode for board B (mouse) */
     {.modifier       = KEYBOARD_MODIFIER_RIGHTSHIFT | KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTCTRL,
      .modifier_mask  = KEYBOARD_MODIFIER_LEFTALT,
      .keys           = {HOTKEY_TOGGLE},
      .key_count      = 1,
      .pass_to_os     = false,
      .acknowledge    = true,
-     .action_handler = &fw_upgrade_hotkey_handler_B}};
+     .action_handler = &fw_upgrade_hotkey_handler_B},
+    
+    // Toggle relative mouse mode
+    {.modifier       = KEYBOARD_MODIFIER_LEFTGUI,
+     .keys           = {HOTKEY_TOGGLE},
+     .key_count      = 1,
+     .pass_to_os     = false,
+     .acknowledge    = true,
+     .action_handler = &toggle_relative_mouse_handler},
+
+     };
 
 /* ============================================================ *
  * Detect if any hotkeys were pressed
