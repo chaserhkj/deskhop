@@ -115,6 +115,11 @@ void mouse_zoom_hotkey_handler(device_t *state, hid_keyboard_report_t *report) {
 
 void toggle_relative_mouse_handler(device_t *state, hid_keyboard_report_t *report) {
     state->relative_mouse ^= 1;
+    if (state->relative_mouse) {
+        // Reset to origin when switching to absolute
+        state->mouse_x = 0;
+        state->mouse_y = 0;
+    }
     send_value(state->relative_mouse, RELATIVE_MOUSE_MSG);
 }
 
@@ -198,6 +203,12 @@ void handle_screens_info_msg(uart_packet_t *packet, device_t *state) {
 
 void handle_relative_mouse_msg(uart_packet_t *packet, device_t *state) {
     state->relative_mouse = packet->data[0];
+
+    if (state->relative_mouse) {
+        // Reset to origin when switching to absolute
+        state->mouse_x = 0;
+        state->mouse_y = 0;
+    }
 
     restore_leds(state);
 }
