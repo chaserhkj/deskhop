@@ -74,6 +74,7 @@ void pio_usb_host_config(void) {
 void initial_setup(device_t *state) {
 #if BOARD_ROLE == PICO_A
     state->forwarder_state = FWD_DISABLED;
+    state->forwarder_signal = FWD_SIG_NONE;
 #endif
 #if BOARD_ROLE == PICO_B
     // Unset bootloader entry flag at boot up

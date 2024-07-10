@@ -116,7 +116,7 @@ enum packet_type_e {
 
 #if BOARD_ROLE == PICO_A
 
-#define HOST_MSG_PAYLOAD_LENGTH (CFG_TUD_HID_EP_BUFSIZE - 1)
+#define HOST_MSG_PAYLOAD_LENGTH (CFG_TUD_HID_EP_BUFSIZE - 4)
 // Host message types
 enum host_msg_type_e {
     SET_SCREENS_INFO_HOST_MSG = 1,
@@ -131,18 +131,14 @@ enum host_msg_type_e {
 enum host_msg_resp_type_e {
     // Ok 
     OK_HOST_MSG_RESP = 1,
-    // Data read
-    DATA_HOST_MSG_RESP = 2,
     // Out of bounds
-    OOB_HOST_MSG_RESP = 3,
+    OOB_HOST_MSG_RESP = 2,
     // Invalid state
-    INVALID_STATE_HOST_MSG_RESP = 4,
+    INVALID_STATE_HOST_MSG_RESP = 3,
     // Checksum mismatch
-    WRONG_CHECKSUM_HOST_MSG_RESP = 5,
+    WRONG_CHECKSUM_HOST_MSG_RESP = 4,
     // Malformed message
-    MALFORMED_HOST_MSG_RESP = 6,
-    // Buffer overrun occurred, returning obtained data
-    OVERRAN_HOST_MSG_RESP = 7,
+    MALFORMED_HOST_MSG_RESP = 5,
 };
 #endif
 
@@ -287,11 +283,17 @@ typedef enum { IDLE, READING_PACKET, PROCESSING_PACKET } receiver_state_t;
 typedef enum {
     FWD_DISABLED,
     FWD_IDLE,
-    FWD_SEND,
+    FWD_SENDING,
+    FWD_READING_HEADER,
     FWD_RECEIVING,
-    FWD_OVERRAN,
 } forwarder_state_t;
 #endif
+
+typedef enum {
+    FWD_SIG_NONE,
+    FWD_SIG_STOP,
+    FWD_SIG_RESET,
+} forwarder_signal_t;
 
 typedef struct {
     uint8_t kbd_dev_addr; // Address of the keyboard device
@@ -301,12 +303,11 @@ typedef struct {
     uint64_t last_activity[NUM_SCREENS]; // Timestamp of the last input activity (-||-)
     receiver_state_t receiver_state;     // Storing the state for the simple receiver state machine
 #if BOARD_ROLE == PICO_A
-    forwarder_state_t forwarder_state;       // State for UART forwarder
-    uint8_t forwarder_out_data[FORWARDER_BUF_SIZE]; // Buffer for sending out forwarder data
-    uint16_t forwarder_out_data_size;           // data length in out buffer
-    uint8_t forwarder_in_data[FORWARDER_BUF_SIZE]; // Ring buffer for reading in forwarder data
-    uint16_t forwarder_in_data_written; // pointer for writing into in buffer
-    uint16_t forwarder_in_data_read;    // pointer for (usb HID) to read from in buffer
+    forwarder_state_t forwarder_state;          // State for UART forwarder
+    forwarder_signal_t forwarder_signal;        // Used by core 0 to signal forwarder stop and reset
+    uint8_t forwarder_data[FORWARDER_BUF_SIZE]; // Buffer for sending in and out forwarder data
+    uint16_t forwarder_data_size;           // data length in buffer
+    uint16_t forwarder_expected_reply_length;         // expected reply length for next reply
 #endif
     uint64_t core1_last_loop_pass;       // Timestamp of last core1 loop execution
     uint8_t active_output;               // Currently selected output (0 = A, 1 = B)
