@@ -6,7 +6,12 @@ import time
 VID=0x2e8a
 PID=0x107c
 
-dev = hid.Device(VID, PID)
+while True:
+    try:
+        dev = hid.Device(VID, PID)
+        break
+    except Exception as e:
+        time.sleep(1)
 # Probe if forwarder is up
 try:
     print("Waiting for the device...", end="", flush=True)
